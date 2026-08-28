@@ -163,6 +163,60 @@ pub fn generate_fleet(spec: &FleetSpec, mut sink: impl FnMut(FixtureObject)) {
     }
 }
 
+/// Build a minimal valid safetensors file from named tensors.
+pub fn build_safetensors(tensors: &[(String, Vec<u8>)]) -> Vec<u8> {
+    let mut header = String::from("{");
+    let mut offset = 0usize;
+    for (i, (name, data)) in tensors.iter().enumerate() {
+        if i > 0 {
+            header.push(',');
+        }
+        header.push_str(&format!(
+            r#""{name}":{{"dtype":"F32","shape":[{}],"data_offsets":[{offset},{}]}}"#,
+            data.len() / 4,
+            offset + data.len()
+        ));
+        offset += data.len();
+    }
+    header.push('}');
+    let mut out = Vec::new();
+    out.extend_from_slice(&(header.len() as u64).to_le_bytes());
+    out.extend_from_slice(header.as_bytes());
+    for (_, data) in tensors {
+        out.extend_from_slice(data);
+    }
+    out
+}
+
+/// Two adjacent synthetic RL checkpoints (safetensors): `total` tensors of
+/// `tensor_bytes` each, with `changed` tensors differing in the second — the
+/// M5 acceptance fixture (98% bit-identical => changed = 2% of total).
+/// Changed tensors get small per-weight perturbations, like a training step.
+pub fn generate_rl_checkpoints(
+    total: usize,
+    tensor_bytes: usize,
+    changed: usize,
+    seed: u64,
+) -> (Vec<u8>, Vec<u8>) {
+    let mut rng = StdRng::seed_from_u64(seed);
+    let tensors_a: Vec<(String, Vec<u8>)> = (0..total)
+        .map(|i| {
+            let mut t = vec![0u8; tensor_bytes];
+            rng.fill(&mut t[..]);
+            (format!("policy.layer{i:03}.weight"), t)
+        })
+        .collect();
+    let mut tensors_b = tensors_a.clone();
+    for i in 0..changed.min(total) {
+        // Spread the changed tensors through the model.
+        let idx = (i * total) / changed.max(1);
+        for b in tensors_b[idx].1.iter_mut() {
+            *b = b.wrapping_add(rng.gen_range(0..3));
+        }
+    }
+    (build_safetensors(&tensors_a), build_safetensors(&tensors_b))
+}
+
 /// A small-object population for scanner throughput tests: `count` objects of
 /// `size` bytes each, drawn from `families` distinct contents so there is
 /// known redundancy.

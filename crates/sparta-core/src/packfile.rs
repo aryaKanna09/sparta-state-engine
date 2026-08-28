@@ -295,6 +295,15 @@ pub fn scan_records(pack_bytes: &[u8]) -> Result<Vec<PackEntry>, CoreError> {
     Ok(entries)
 }
 
+/// Compress a chunk against a raw-content zstd dictionary (parent delta or
+/// trained dictionary). Returns the encoded bytes.
+pub fn compress_chunk_with_dict(raw: &[u8], dict: &[u8], level: i32) -> Result<Vec<u8>, CoreError> {
+    let mut c = zstd::bulk::Compressor::with_dictionary(level, dict)
+        .map_err(|e| CoreError::Compression(format!("dict compressor: {e}")))?;
+    c.compress(raw)
+        .map_err(|e| CoreError::Compression(format!("dict compress: {e}")))
+}
+
 /// Decode chunk data fetched from a pack and verify its BLAKE3 address.
 pub fn decode_chunk(
     entry: &PackEntry,
@@ -452,6 +461,35 @@ mod tests {
         let mut stored = sealed.bytes[e.offset as usize..(e.offset + e.data_len) as usize].to_vec();
         stored[10] ^= 0x01;
         assert!(decode_chunk(&e, &stored, None).is_err());
+    }
+
+    #[test]
+    fn dict_compressed_chunk_roundtrips() {
+        // Parent-delta shape: child differs from parent in a small hotspot.
+        let parent: Vec<u8> = (0..600_000u32).map(|i| (i % 251) as u8).collect();
+        let mut child = parent.clone();
+        for b in &mut child[100_000..104_096] {
+            *b ^= 0x5a;
+        }
+        let h = ChunkHash::of(&child);
+        let delta = compress_chunk_with_dict(&child, &parent, 3).unwrap();
+        let plain = zstd::stream::encode_all(child.as_slice(), 3).unwrap();
+        assert!(
+            delta.len() < plain.len(),
+            "parent dict must beat plain zstd here ({} vs {})",
+            delta.len(),
+            plain.len()
+        );
+        let mut b = PackBuilder::new();
+        let e = b
+            .add_encoded(h, CODEC_ZSTD_DICT, 0, child.len() as u64, &delta)
+            .unwrap();
+        let sealed = b.seal();
+        let stored = &sealed.bytes[e.offset as usize..(e.offset + e.data_len) as usize];
+        let restored = decode_chunk(&e, stored, Some(&parent)).unwrap();
+        assert_eq!(restored, child);
+        // Wrong dictionary must fail hash verification, not return bad bytes.
+        assert!(decode_chunk(&e, stored, Some(&child[..1000])).is_err());
     }
 
     #[test]

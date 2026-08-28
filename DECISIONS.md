@@ -236,3 +236,33 @@ string + engine DB cursor); skipping past an emitted CommonPrefix advances a
 cursor to `prefix + U+10FFFF`, which sorts after every member key. This makes
 pages restartable without server-side listing state, at the cost of one extra
 upstream list call per page.
+
+## D-028: Delta-chain encoding design
+New (non-dedup) chunks are compressed three ways — plain zstd-3, against the
+positionally aligned parent chunk as a raw-content dictionary, and against the
+prefix's trained dictionary — and the smallest wins, with a 10% improvement
+bar for dictionary codecs (each dict-coded read costs an extra chunk fetch).
+The parent-dict ref is stored as a full nested `ChunkRef` in the manifest
+(`dict`), so restore, GC marking, compaction remapping, and rebuild-index all
+see it without consulting anything else; parent chunks must themselves be
+plain, capping decode chains at one level. Pack-tail self-description cannot
+carry the 32-byte parent hash (u64 dict_id field), so the pack-scan recovery
+path cannot decode parent-delta chunks without manifests — recorded as an
+accepted limitation (manifests are the durable metadata of record).
+
+## D-029: Meter log is multi-writer by design
+GC sweeps, train-dict, and tier runs are CLI processes that must log to the
+same tamper-evident chain as the serving gateway. Appends are now serialized
+with an advisory flock and each writer re-syncs the chain tail (reading only
+the bytes appended since its last write) before sealing a new record. Caught
+by the M5 integration tests as a real chain break; covered by a two-writer
+unit test.
+
+## D-030: Parent-detection threshold and tiering conservatism
+`SPARTA_DELTA_MINHASH_THRESHOLD` defaults to 0.7 — deliberately conservative,
+since chunk-set Jaccard between related snapshots of few-chunk objects is
+structurally low, and a missed parent only costs compression opportunity while
+a wrong parent records wrong lineage. Deployments with small objects should
+lower it explicitly. Tiering transitions a pack only when every referencing
+manifest matches the rule prefix and the oldest referencing manifest exceeds
+the age — mixed packs never transition (correctness over ratio).

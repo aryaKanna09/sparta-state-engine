@@ -107,6 +107,24 @@ impl Db {
                 enqueued_ms INTEGER NOT NULL,
                 PRIMARY KEY (bucket, key)
             );
+            -- MinHash LSH bands for parent detection (M5 delta chains).
+            CREATE TABLE IF NOT EXISTS manifest_bands (
+                band    INTEGER NOT NULL,
+                bucket  TEXT NOT NULL,
+                keyhash TEXT NOT NULL,
+                PRIMARY KEY (band, bucket, keyhash)
+            );
+            -- Trained zstd dictionaries (M5 TrailStore) + per-prefix rules.
+            CREATE TABLE IF NOT EXISTS dicts (
+                dict_id INTEGER PRIMARY KEY,
+                bytes   BLOB NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS dict_rules (
+                bucket  TEXT NOT NULL,
+                prefix  TEXT NOT NULL,
+                dict_id INTEGER NOT NULL,
+                PRIMARY KEY (bucket, prefix)
+            );
             -- NVMe chunk cache accounting.
             CREATE TABLE IF NOT EXISTS cache_entries (
                 hash         BLOB PRIMARY KEY,
@@ -514,6 +532,133 @@ impl Db {
         let conn = self.conn.lock().unwrap();
         conn.execute_batch("DELETE FROM chunks; DELETE FROM packs; DELETE FROM manifests;")?;
         Ok(())
+    }
+
+    // --- MinHash bands (parent detection) --------------------------------
+
+    pub fn upsert_bands(&self, bucket: &str, keyhash: &str, bands: &[u64]) -> Result<()> {
+        db_fault()?;
+        let mut conn = self.conn.lock().unwrap();
+        let tx = conn.transaction()?;
+        {
+            let mut del =
+                tx.prepare_cached("DELETE FROM manifest_bands WHERE bucket = ?1 AND keyhash = ?2")?;
+            del.execute(rusqlite::params![bucket, keyhash])?;
+            let mut ins = tx.prepare_cached(
+                "INSERT OR IGNORE INTO manifest_bands (band, bucket, keyhash) VALUES (?1, ?2, ?3)",
+            )?;
+            for b in bands {
+                ins.execute(rusqlite::params![*b as i64, bucket, keyhash])?;
+            }
+        }
+        tx.commit()?;
+        Ok(())
+    }
+
+    pub fn delete_bands(&self, bucket: &str, keyhash: &str) -> Result<()> {
+        db_fault()?;
+        let conn = self.conn.lock().unwrap();
+        conn.execute(
+            "DELETE FROM manifest_bands WHERE bucket = ?1 AND keyhash = ?2",
+            rusqlite::params![bucket, keyhash],
+        )?;
+        Ok(())
+    }
+
+    /// Keyhashes sharing at least one LSH band, most-sharing first.
+    pub fn band_candidates(
+        &self,
+        bucket: &str,
+        bands: &[u64],
+        limit: usize,
+    ) -> Result<Vec<String>> {
+        db_fault()?;
+        let conn = self.conn.lock().unwrap();
+        let placeholders = vec!["?"; bands.len()].join(",");
+        let sql = format!(
+            "SELECT keyhash, COUNT(*) AS shared FROM manifest_bands
+             WHERE bucket = ? AND band IN ({placeholders})
+             GROUP BY keyhash ORDER BY shared DESC LIMIT ?"
+        );
+        let mut stmt = conn.prepare(&sql)?;
+        let mut params: Vec<Box<dyn rusqlite::ToSql>> = vec![Box::new(bucket.to_string())];
+        for b in bands {
+            params.push(Box::new(*b as i64));
+        }
+        params.push(Box::new(limit as i64));
+        let refs: Vec<&dyn rusqlite::ToSql> = params.iter().map(|p| p.as_ref()).collect();
+        let rows = stmt
+            .query_map(refs.as_slice(), |r| r.get::<_, String>(0))?
+            .collect::<std::result::Result<Vec<_>, _>>()?;
+        Ok(rows)
+    }
+
+    // --- Trained dictionaries (TrailStore) -------------------------------
+
+    pub fn insert_dict(&self, dict_id: u64, bytes: &[u8]) -> Result<()> {
+        db_fault()?;
+        let conn = self.conn.lock().unwrap();
+        conn.execute(
+            "INSERT OR REPLACE INTO dicts (dict_id, bytes) VALUES (?1, ?2)",
+            rusqlite::params![dict_id as i64, bytes],
+        )?;
+        Ok(())
+    }
+
+    pub fn get_dict(&self, dict_id: u64) -> Result<Option<Vec<u8>>> {
+        db_fault()?;
+        let conn = self.conn.lock().unwrap();
+        conn.query_row(
+            "SELECT bytes FROM dicts WHERE dict_id = ?1",
+            [dict_id as i64],
+            |r| r.get(0),
+        )
+        .map(Some)
+        .or_else(|e| match e {
+            rusqlite::Error::QueryReturnedNoRows => Ok(None),
+            e => Err(e.into()),
+        })
+    }
+
+    pub fn upsert_dict_rule(&self, bucket: &str, prefix: &str, dict_id: u64) -> Result<()> {
+        db_fault()?;
+        let conn = self.conn.lock().unwrap();
+        conn.execute(
+            "INSERT OR REPLACE INTO dict_rules (bucket, prefix, dict_id) VALUES (?1, ?2, ?3)",
+            rusqlite::params![bucket, prefix, dict_id as i64],
+        )?;
+        Ok(())
+    }
+
+    /// Longest-prefix dict rule matching a key.
+    pub fn dict_rule_for_key(&self, bucket: &str, key: &str) -> Result<Option<u64>> {
+        db_fault()?;
+        let conn = self.conn.lock().unwrap();
+        let mut stmt =
+            conn.prepare_cached("SELECT prefix, dict_id FROM dict_rules WHERE bucket = ?1")?;
+        let rows = stmt
+            .query_map([bucket], |r| {
+                Ok((r.get::<_, String>(0)?, r.get::<_, i64>(1)? as u64))
+            })?
+            .collect::<std::result::Result<Vec<_>, _>>()?;
+        Ok(rows
+            .into_iter()
+            .filter(|(p, _)| key.starts_with(p.as_str()))
+            .max_by_key(|(p, _)| p.len())
+            .map(|(_, id)| id))
+    }
+
+    pub fn all_dict_rules(&self, bucket: &str) -> Result<Vec<(String, u64)>> {
+        db_fault()?;
+        let conn = self.conn.lock().unwrap();
+        let mut stmt =
+            conn.prepare_cached("SELECT prefix, dict_id FROM dict_rules WHERE bucket = ?1")?;
+        let rows = stmt
+            .query_map([bucket], |r| {
+                Ok((r.get::<_, String>(0)?, r.get::<_, i64>(1)? as u64))
+            })?
+            .collect::<std::result::Result<Vec<_>, _>>()?;
+        Ok(rows)
     }
 
     // --- NVMe chunk cache accounting -----------------------------------

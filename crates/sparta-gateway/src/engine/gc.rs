@@ -99,6 +99,17 @@ impl Engine {
                 if refs.last() != Some(mkey) {
                     refs.push(mkey.clone());
                 }
+                // Parent-delta dictionaries are hard references too.
+                if let Some(d) = &c.dict {
+                    referenced_chunks
+                        .entry(d.pack_id.clone())
+                        .or_default()
+                        .insert(d.hash);
+                    let refs = referencing_manifests.entry(d.pack_id.clone()).or_default();
+                    if refs.last() != Some(mkey) {
+                        refs.push(mkey.clone());
+                    }
+                }
             }
             manifests.insert(mkey.clone(), m);
         }
@@ -120,6 +131,9 @@ impl Engine {
             for m in manifests.values() {
                 for c in &m.chunks {
                     set.insert(c.pack_id.clone());
+                    if let Some(d) = &c.dict {
+                        set.insert(d.pack_id.clone());
+                    }
                 }
             }
             let _ = referenced;
@@ -317,6 +331,16 @@ impl Engine {
                             c.offset = new_e.offset;
                             c.data_len = new_e.data_len;
                             changed = true;
+                        }
+                    }
+                    if let Some(d) = c.dict.as_deref_mut() {
+                        if &d.pack_id == pack_id {
+                            if let Some(new_e) = new_locations.get(&d.hash) {
+                                d.pack_id = sealed.pack_id.clone();
+                                d.offset = new_e.offset;
+                                d.data_len = new_e.data_len;
+                                changed = true;
+                            }
                         }
                     }
                 }

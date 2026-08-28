@@ -172,6 +172,7 @@ pub async fn delete_engine_object(engine: &Arc<Engine>, bucket: &str, key: &str)
         warn!(bucket, key, error = %e, "manifest delete failed (raw delete still proceeds)");
     }
     let _ = engine.db.delete_manifest(bucket, &kh);
+    let _ = engine.db.delete_bands(bucket, &kh);
     let _ = engine.db.remove_ingest(bucket, key);
 }
 

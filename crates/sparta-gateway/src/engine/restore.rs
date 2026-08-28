@@ -156,6 +156,48 @@ fn plan(manifest: &Manifest, start: u64, end: u64) -> Vec<PlannedChunk> {
     out
 }
 
+/// Materialize a manifest's full raw payload (bounded uses only: parent
+/// context for delta ingest, recipe reconstruction).
+pub async fn fetch_payload(
+    engine: &Arc<Engine>,
+    bucket: &str,
+    object_key: &str,
+    manifest: &Manifest,
+) -> Result<Vec<u8>> {
+    let mut payload = Vec::with_capacity(manifest.payload_size as usize);
+    for r in &manifest.chunks {
+        let raw = fetch_chunk(engine, bucket, object_key, r).await?;
+        payload.extend_from_slice(&raw);
+    }
+    if ChunkHash::of(&payload) != manifest.payload_hash {
+        anyhow::bail!("payload hash mismatch while materializing {object_key}");
+    }
+    Ok(payload)
+}
+
+/// Resolve the dictionary bytes a chunk needs, if any: a parent chunk's raw
+/// bytes (delta chains) or a trained corpus dictionary by id.
+async fn dict_bytes_for(
+    engine: &Arc<Engine>,
+    bucket: &str,
+    object_key: &str,
+    r: &ChunkRef,
+) -> Result<Option<Vec<u8>>> {
+    if let Some(parent_ref) = &r.dict {
+        // Parent chunks are always plain; recursion terminates immediately.
+        let raw = Box::pin(fetch_chunk(engine, bucket, object_key, parent_ref)).await?;
+        return Ok(Some(raw));
+    }
+    if r.codec == sparta_core::packfile::CODEC_ZSTD_DICT && r.dict_id != 0 {
+        let dict = engine
+            .trained_dict(bucket, r.dict_id)
+            .await
+            .with_context(|| format!("trained dict {} unavailable", r.dict_id))?;
+        return Ok(Some(dict));
+    }
+    Ok(None)
+}
+
 /// Fetch one chunk's raw bytes: cache first, then a ranged GET into the pack.
 async fn fetch_chunk(
     engine: &Arc<Engine>,
@@ -177,7 +219,8 @@ async fn fetch_chunk(
         )
         .await
         .with_context(|| format!("fetch chunk {} from pack {}", r.hash, r.pack_id))?;
-    let raw = decode_chunk(&entry_of(r), &data, None).context("chunk decode/verify")?;
+    let dict = dict_bytes_for(engine, bucket, object_key, r).await?;
+    let raw = decode_chunk(&entry_of(r), &data, dict.as_deref()).context("chunk decode/verify")?;
     if let Some(cache) = &engine.cache {
         let pinned = super::cache::should_pin(&engine.pin_prefixes, object_key);
         cache.put(&r.hash, &raw, pinned);
@@ -254,7 +297,8 @@ async fn resolve_unit(
             for p in g.members {
                 let lo = (p.r.offset - g.start) as usize;
                 let hi = lo + p.r.data_len as usize;
-                let raw = decode_chunk(&entry_of(&p.r), &blob[lo..hi], None)
+                let dict = dict_bytes_for(engine, bucket, object_key, &p.r).await?;
+                let raw = decode_chunk(&entry_of(&p.r), &blob[lo..hi], dict.as_deref())
                     .context("chunk decode/verify")?;
                 if let Some(cache) = &engine.cache {
                     let pinned = super::cache::should_pin(&engine.pin_prefixes, object_key);
@@ -408,6 +452,7 @@ mod tests {
                 data_len: *len,
                 codec: 0,
                 dict_id: 0,
+                dict: None,
             })
             .collect();
         let total: u64 = lens.iter().sum();

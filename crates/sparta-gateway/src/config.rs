@@ -41,6 +41,12 @@ pub struct GatewayConfig {
     pub restore_concurrency: usize,
     /// Max gap between chunks merged into one ranged GET.
     pub coalesce_gap_bytes: u64,
+    /// Delta chains: encode new chunks against a parent (M5).
+    pub delta_enabled: bool,
+    /// MinHash Jaccard threshold for automatic parent detection.
+    pub delta_threshold: f64,
+    /// Age-based tiering rules: "prefix=days:CLASS,..." (M5 TrailStore).
+    pub tier_rules: String,
     pub force_path_style: bool,
     pub shadow_chunking: bool,
     /// Per-attempt timeout for upstream calls, ms (0 = SDK default).
@@ -136,6 +142,12 @@ impl GatewayConfig {
                 .ok()
                 .and_then(|v| v.parse().ok())
                 .unwrap_or(1024 * 1024),
+            delta_enabled: env_flag("SPARTA_DELTA", true),
+            delta_threshold: std::env::var("SPARTA_DELTA_MINHASH_THRESHOLD")
+                .ok()
+                .and_then(|v| v.parse().ok())
+                .unwrap_or(0.7),
+            tier_rules: std::env::var("SPARTA_TIER_RULES").unwrap_or_default(),
             force_path_style: env_flag("SPARTA_FORCE_PATH_STYLE", true),
             shadow_chunking: env_flag("SPARTA_SHADOW_CHUNKING", true),
             upstream_attempt_timeout_ms: std::env::var("SPARTA_UPSTREAM_ATTEMPT_TIMEOUT_MS")

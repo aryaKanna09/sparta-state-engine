@@ -36,6 +36,7 @@ base64 = { workspace = true }
 
 [dev-dependencies]
 sparta-testkit = { workspace = true }
+blake3 = { workspace = true }
 tempfile = { workspace = true }
 flate2 = { workspace = true }
 

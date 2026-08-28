@@ -4,6 +4,7 @@
 //! and similarity sketching. This crate performs no I/O beyond `std::io` traits;
 //! all storage and network concerns live in the gateway/scanner crates.
 
+pub mod checkpoint;
 pub mod chunker;
 pub mod compression;
 pub mod hash;

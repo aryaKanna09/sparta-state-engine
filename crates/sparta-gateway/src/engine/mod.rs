@@ -11,6 +11,7 @@ pub mod keys;
 pub mod listing;
 pub mod rebuild;
 pub mod restore;
+pub mod trailstore;
 
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
@@ -166,6 +167,19 @@ impl Engine {
                     .await;
             }
         }
+    }
+
+    /// Trained dictionary bytes by id: DB cache first, bucket fallback.
+    pub async fn trained_dict(&self, bucket: &str, dict_id: u64) -> Result<Vec<u8>> {
+        if let Ok(Some(bytes)) = self.db.get_dict(dict_id) {
+            return Ok(bytes);
+        }
+        let key = format!("{}{:016x}.dict", keys::DICT_PREFIX, dict_id);
+        let Some(bytes) = self.get_object_bytes(bucket, &key).await? else {
+            anyhow::bail!("dictionary {dict_id:016x} not found in bucket");
+        };
+        let _ = self.db.insert_dict(dict_id, &bytes);
+        Ok(bytes)
     }
 
     // --- upstream helpers ---------------------------------------------------

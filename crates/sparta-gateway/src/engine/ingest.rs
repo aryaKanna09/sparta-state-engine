@@ -13,12 +13,12 @@ use std::time::{Duration, Instant};
 use anyhow::{Context, Result};
 use tracing::{info, warn};
 
-use sparta_core::chunker::chunk_spans;
+use sparta_core::checkpoint::chunk_checkpoint_aware;
 use sparta_core::compression::{normalize, SniffOutcome};
 use sparta_core::hash::ChunkHash;
 use sparta_core::manifest::{ChunkRef, Manifest};
 use sparta_core::minhash::MinHashSketch;
-use sparta_core::packfile::{PackBuilder, PackEntry};
+use sparta_core::packfile::{compress_chunk_with_dict, PackBuilder, PackEntry, CODEC_ZSTD_DICT};
 use sparta_core::spec;
 use sparta_meter::record::{Mode, RecordBody};
 
@@ -28,8 +28,9 @@ use super::{keys, now_ms, Engine};
 enum PendingRef {
     /// Already durable (dedup hit on an uploaded pack).
     Located(ChunkRef),
-    /// Lives in the open builder; pack id assigned at seal.
-    Open(PackEntry),
+    /// Lives in the open builder; pack id assigned at seal. The second field
+    /// is the parent-delta dictionary ref, attached at resolution.
+    Open(PackEntry, Option<Box<ChunkRef>>),
 }
 
 /// One object fully chunked, awaiting its packs and manifest write.
@@ -161,11 +162,32 @@ pub async fn process_batch(engine: &Arc<Engine>) -> Result<usize> {
             } => (payload.as_slice(), Some(recipe.clone()), Some(*detected)),
             SniffOutcome::Opaque { detected } => (raw.as_slice(), None, *detected),
         };
-        let spans = chunk_spans(payload);
-        let mut refs = Vec::with_capacity(spans.len());
+        // Checkpoint-aware boundaries (safetensors / PyTorch zip) when
+        // detected; generic FastCDC otherwise (M5).
+        let spans = chunk_checkpoint_aware(payload);
         let mut sketch = MinHashSketch::new();
         for span in &spans {
             sketch.insert(&span.hash);
+        }
+
+        // M5 delta chains: explicit parent header, or MinHash detection.
+        let parent = find_parent(engine, &item.bucket, &item.key, &user_metadata, &sketch).await;
+        let parent_ctx = match &parent {
+            Some(pm) => load_parent_context(engine, &item.bucket, pm).await,
+            None => None,
+        };
+        // Trained corpus dictionary for this prefix, if one exists.
+        let trained = match engine.db.dict_rule_for_key(&item.bucket, &item.key) {
+            Ok(Some(id)) => engine
+                .trained_dict(&item.bucket, id)
+                .await
+                .ok()
+                .map(|bytes| (id, bytes)),
+            _ => None,
+        };
+
+        let mut refs = Vec::with_capacity(spans.len());
+        for span in &spans {
             // Dedup: durable chunks first, then the open builder (add_chunk
             // returns the existing entry for repeats within the builder).
             if let Ok(Some(loc)) = engine.db.lookup_chunk(&span.hash) {
@@ -177,14 +199,20 @@ pub async fn process_batch(engine: &Arc<Engine>) -> Result<usize> {
                     data_len: loc.data_len,
                     codec: loc.codec,
                     dict_id: loc.dict_id,
+                    dict: None,
                 }));
                 continue;
             }
             let data = &payload[span.offset..span.offset + span.length];
-            let entry = builder
-                .add_chunk(span.hash, data)
-                .context("pack chunk append")?;
-            refs.push(PendingRef::Open(entry));
+            let (entry, dict_ref) = encode_chunk(
+                &mut builder,
+                span,
+                data,
+                parent_ctx.as_ref(),
+                trained.as_ref(),
+            )
+            .context("pack chunk append")?;
+            refs.push(PendingRef::Open(entry, dict_ref));
             if builder.is_full() {
                 let sealed = std::mem::take(&mut builder).seal();
                 engine_put_requests += 1;
@@ -216,7 +244,7 @@ pub async fn process_batch(engine: &Arc<Engine>) -> Result<usize> {
             payload_size: payload.len() as u64,
             payload_hash: ChunkHash::of(payload),
             chunks: Vec::new(), // filled after seal
-            parent: None,
+            parent: parent.as_ref().map(|p| p.key.clone()),
             minhash: Some(sketch.signature().to_vec()),
             created_unix_ms: now_ms(),
             quarantined: false,
@@ -253,7 +281,7 @@ pub async fn process_batch(engine: &Arc<Engine>) -> Result<usize> {
             .drain(..)
             .map(|r| match r {
                 PendingRef::Located(c) => Ok(c),
-                PendingRef::Open(_) => {
+                PendingRef::Open(..) => {
                     anyhow::bail!("unsealed chunk ref survived batch seal (bug)")
                 }
             })
@@ -276,6 +304,15 @@ pub async fn process_batch(engine: &Arc<Engine>) -> Result<usize> {
 
         engine_put_requests += 1; // manifest PUT
         engine.store_manifest(&obj.bucket, &obj.manifest).await?;
+        // Register LSH bands so this object can be detected as a parent.
+        if let Some(sig) = &obj.manifest.minhash {
+            if let Some(sk) = MinHashSketch::from_signature(sig.clone()) {
+                let _ =
+                    engine
+                        .db
+                        .upsert_bands(&obj.bucket, &keys::keyhash(&obj.key), &sk.band_keys());
+            }
+        }
         if let Err(e) = engine.delete_object_raw(&obj.bucket, &obj.key).await {
             warn!(bucket = obj.bucket, key = obj.key, error = %e,
                   "raw delete failed; manifest shadows it, GC of raw deferred");
@@ -349,13 +386,13 @@ async fn seal_upload_resolve(
 ) -> Result<()> {
     let mut buckets: std::collections::BTreeSet<String> = pending_objects
         .iter()
-        .filter(|o| o.refs.iter().any(|r| matches!(r, PendingRef::Open(_))))
+        .filter(|o| o.refs.iter().any(|r| matches!(r, PendingRef::Open(..))))
         .map(|o| o.bucket.clone())
         .collect();
     if let Some(b) = current_bucket {
         if current_refs
             .iter()
-            .any(|r| matches!(r, PendingRef::Open(_)))
+            .any(|r| matches!(r, PendingRef::Open(..)))
             || buckets.is_empty()
         {
             buckets.insert(b.to_string());
@@ -402,7 +439,7 @@ fn resolve_open_refs(
     let in_pack: std::collections::HashMap<ChunkHash, &PackEntry> =
         sealed.entries.iter().map(|e| (e.hash, e)).collect();
     let fix = |r: &mut PendingRef| {
-        if let PendingRef::Open(entry) = r {
+        if let PendingRef::Open(entry, dict_ref) = r {
             if let Some(e) = in_pack.get(&entry.hash) {
                 *r = PendingRef::Located(ChunkRef {
                     hash: e.hash,
@@ -412,6 +449,7 @@ fn resolve_open_refs(
                     data_len: e.data_len,
                     codec: e.codec,
                     dict_id: e.dict_id,
+                    dict: dict_ref.take(),
                 });
             }
         }
@@ -420,4 +458,186 @@ fn resolve_open_refs(
         obj.refs.iter_mut().for_each(fix);
     }
     current_refs.iter_mut().for_each(fix);
+}
+
+/// Parent context for delta encoding: the parent's raw payload plus its chunk
+/// map (cumulative offsets), so a child chunk at offset X can be encoded
+/// against the positionally aligned parent chunk.
+struct ParentContext {
+    payload: Vec<u8>,
+    /// (payload_start, ref) per parent chunk, in order.
+    spans: Vec<(u64, ChunkRef)>,
+}
+
+impl ParentContext {
+    /// The parent chunk covering `offset` (clamped to the last chunk), with
+    /// its raw bytes. Only plain (non-dict) parent chunks are usable as
+    /// dictionaries, keeping decode chains one level deep.
+    fn chunk_covering(&self, offset: u64) -> Option<(&ChunkRef, &[u8])> {
+        if self.spans.is_empty() {
+            return None;
+        }
+        let idx = match self.spans.binary_search_by(|(start, _)| start.cmp(&offset)) {
+            Ok(i) => i,
+            Err(0) => 0,
+            Err(i) => i - 1,
+        };
+        let (start, r) = &self.spans[idx.min(self.spans.len() - 1)];
+        if r.codec == CODEC_ZSTD_DICT || r.dict.is_some() {
+            return None;
+        }
+        let lo = *start as usize;
+        let hi = (lo + r.raw_len as usize).min(self.payload.len());
+        Some((r, &self.payload[lo..hi]))
+    }
+}
+
+/// Resolve the delta parent: explicit `x-amz-meta-sparta-parent` first, then
+/// MinHash LSH detection above the configured Jaccard threshold.
+async fn find_parent(
+    engine: &Arc<Engine>,
+    bucket: &str,
+    child_key: &str,
+    user_metadata: &std::collections::BTreeMap<String, String>,
+    sketch: &MinHashSketch,
+) -> Option<Manifest> {
+    if !engine.cfg.delta_enabled {
+        return None;
+    }
+    if let Some(pkey) = user_metadata.get("sparta-parent") {
+        match engine.fetch_manifest(bucket, pkey).await {
+            Ok(Some(m)) if !m.quarantined => return Some(m),
+            Ok(_) => {
+                warn!(
+                    bucket,
+                    child_key,
+                    parent = pkey,
+                    "declared parent unavailable"
+                );
+            }
+            Err(e) => warn!(bucket, child_key, parent = pkey, error = %e, "parent fetch failed"),
+        }
+    }
+    let child_kh = keys::keyhash(child_key);
+    let candidates = engine
+        .db
+        .band_candidates(bucket, &sketch.band_keys(), 8)
+        .unwrap_or_default();
+    let mut best: Option<(f64, Manifest)> = None;
+    for kh in candidates {
+        if kh == child_kh {
+            continue; // an overwrite's previous version IS a fine parent,
+                      // but its chunks are what we dedup against anyway
+        }
+        let Ok(Some((json, quarantined))) = engine.db.get_manifest(bucket, &kh) else {
+            continue;
+        };
+        if quarantined {
+            continue;
+        }
+        let Ok(m) = Manifest::from_json(&json) else {
+            continue;
+        };
+        let Some(sig) = m.minhash.clone().and_then(MinHashSketch::from_signature) else {
+            continue;
+        };
+        let j = sketch.jaccard(&sig);
+        if j >= engine.cfg.delta_threshold && best.as_ref().map(|(bj, _)| j > *bj).unwrap_or(true) {
+            best = Some((j, m));
+        }
+    }
+    best.map(|(_, m)| m)
+}
+
+/// Materialize the parent payload and chunk map (best effort — delta encoding
+/// is an optimization, never a requirement).
+async fn load_parent_context(
+    engine: &Arc<Engine>,
+    bucket: &str,
+    parent: &Manifest,
+) -> Option<ParentContext> {
+    if parent.payload_size > engine.cfg.ingest_max_bytes {
+        return None;
+    }
+    match super::restore::fetch_payload(engine, bucket, &parent.key, parent).await {
+        Ok(payload) => {
+            let mut spans = Vec::with_capacity(parent.chunks.len());
+            let mut pos = 0u64;
+            for c in &parent.chunks {
+                spans.push((pos, c.clone()));
+                pos += c.raw_len;
+            }
+            Some(ParentContext { payload, spans })
+        }
+        Err(e) => {
+            warn!(bucket, parent = parent.key, error = %e, "parent payload fetch failed; ingesting without delta");
+            None
+        }
+    }
+}
+
+/// Choose the best encoding for a new chunk: plain zstd, raw (incompressible),
+/// parent-delta, or trained dictionary — whichever is smallest, with a 10%
+/// improvement bar for dictionary codecs (a dict ref costs a fetch at read).
+fn encode_chunk(
+    builder: &mut PackBuilder,
+    span: &sparta_core::chunker::ChunkSpan,
+    data: &[u8],
+    parent_ctx: Option<&ParentContext>,
+    trained: Option<&(u64, Vec<u8>)>,
+) -> anyhow::Result<(PackEntry, Option<Box<ChunkRef>>)> {
+    let level = sparta_core::spec::PACK_ZSTD_LEVEL;
+    let plain = zstd::stream::encode_all(data, level)?;
+    let plain_len = plain.len().min(data.len());
+
+    // Parent-delta candidate.
+    let parent_choice = parent_ctx
+        .and_then(|ctx| ctx.chunk_covering(span.offset as u64))
+        .and_then(|(p_ref, p_data)| {
+            compress_chunk_with_dict(data, p_data, level)
+                .ok()
+                .filter(|d| d.len() * 10 < plain_len * 9)
+                .map(|d| (d, p_ref.clone()))
+        });
+    if let Some((delta, p_ref)) = parent_choice {
+        let entry =
+            builder.add_encoded(span.hash, CODEC_ZSTD_DICT, 0, data.len() as u64, &delta)?;
+        return Ok((entry, Some(Box::new(p_ref))));
+    }
+
+    // Trained-dictionary candidate.
+    if let Some((dict_id, dict_bytes)) = trained {
+        if let Ok(d) = compress_chunk_with_dict(data, dict_bytes, level) {
+            if d.len() * 10 < plain_len * 9 {
+                let entry = builder.add_encoded(
+                    span.hash,
+                    CODEC_ZSTD_DICT,
+                    *dict_id,
+                    data.len() as u64,
+                    &d,
+                )?;
+                return Ok((entry, None));
+            }
+        }
+    }
+
+    // Plain path (compressed or raw, whichever is smaller).
+    let entry = if plain.len() < data.len() {
+        builder.add_encoded(
+            span.hash,
+            sparta_core::packfile::CODEC_ZSTD,
+            0,
+            data.len() as u64,
+            &plain,
+        )?
+    } else {
+        builder.add_encoded(
+            span.hash,
+            sparta_core::packfile::CODEC_RAW,
+            0,
+            data.len() as u64,
+            data,
+        )?
+    };
+    Ok((entry, None))
 }

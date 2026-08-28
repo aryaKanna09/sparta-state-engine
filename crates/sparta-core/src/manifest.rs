@@ -26,8 +26,14 @@ pub struct ChunkRef {
     pub offset: u64,
     pub data_len: u64,
     pub codec: u8,
+    /// Trained-dictionary id for `CODEC_ZSTD_DICT` (0 = none / parent dict).
     #[serde(default)]
     pub dict_id: u64,
+    /// Parent-delta dictionary: the chunk whose raw bytes were the zstd
+    /// dictionary for this chunk. Always a plain (non-dict) chunk, so delta
+    /// chains are at most one level deep at decode time.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub dict: Option<Box<ChunkRef>>,
 }
 
 /// One object version as stored by the engine.
@@ -157,6 +163,7 @@ mod tests {
                 data_len: 10,
                 codec: 1,
                 dict_id: 0,
+                dict: None,
             }],
             parent: None,
             minhash: None,

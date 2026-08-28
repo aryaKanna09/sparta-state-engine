@@ -132,3 +132,26 @@ newly written objects, with Invariant 0 intact end to end.
   active mode; byte identity after rebuild-index on a deleted DB; GC dry-run
   + real two-phase run shrinking pack bytes with survivors intact; fault
   suite incl. dead-DB + panicking chunker in active mode.
+
+## M5 — Ratio work (2026-08-28)
+
+- **Checkpoint-aware chunking**: safetensors (JSON header tensor offsets) and
+  PyTorch zip (central directory entry offsets) boundary detection; chunks cut
+  at tensor/entry boundaries with deterministic small-region merging and
+  FastCDC sub-chunking of oversized regions. Acceptance: two synthetic RL
+  checkpoints with 98% bit-identical tensors store <5% of file size as delta
+  through the gateway.
+- **Delta chains** (D-028): parent via `x-amz-meta-sparta-parent` or MinHash
+  LSH detection over stored manifests (threshold `SPARTA_DELTA_MINHASH_
+  THRESHOLD`); new chunks encode against the positionally aligned parent chunk
+  as a raw zstd dictionary when it beats plain by >10%; lineage recorded in
+  `manifest.parent`; dict refs flow through restore, GC mark, compaction
+  remap, and rebuild-index.
+- **TrailStore v1**: `train-dict --bucket --prefix` samples the corpus, trains
+  a zstd dictionary (stored under `_sparta/dicts/` + durable rules map),
+  applied to future writes under the prefix; `tier --bucket` applies
+  `SPARTA_TIER_RULES` age rules as storage-class transitions on packs whose
+  referencing manifests all match the rule prefix (D-030).
+- **Meter**: multi-process-safe appends (flock + tail resync, D-029) — GC,
+  train-dict, and tier log into the same chain as the serving gateway; found
+  by an integration test catching a real chain break.

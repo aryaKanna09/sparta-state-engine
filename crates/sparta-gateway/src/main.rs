@@ -53,6 +53,24 @@ enum Cmd {
         #[arg(long)]
         dry_run: bool,
     },
+    /// Train a per-corpus zstd dictionary applied to future writes (M5).
+    TrainDict {
+        #[arg(long)]
+        bucket: String,
+        #[arg(long)]
+        prefix: String,
+        #[arg(long, default_value_t = 64)]
+        max_samples: usize,
+        #[arg(long, default_value_t = 256 * 1024 * 1024)]
+        max_sample_bytes: u64,
+    },
+    /// Apply age-based tiering rules (SPARTA_TIER_RULES) to engine packs.
+    Tier {
+        #[arg(long = "bucket", required = true)]
+        buckets: Vec<String>,
+        #[arg(long)]
+        dry_run: bool,
+    },
 }
 
 fn main() -> Result<()> {
@@ -80,6 +98,27 @@ fn main() -> Result<()> {
             let engine = build_engine().await?;
             for bucket in &buckets {
                 let report = engine.gc(bucket, dry_run).await?;
+                println!("{}", serde_json::to_string_pretty(&report)?);
+            }
+            Ok(())
+        }),
+        Cmd::TrainDict {
+            bucket,
+            prefix,
+            max_samples,
+            max_sample_bytes,
+        } => rt.block_on(async {
+            let engine = build_engine().await?;
+            let report = engine
+                .train_dict(&bucket, &prefix, max_samples, max_sample_bytes)
+                .await?;
+            println!("{}", serde_json::to_string_pretty(&report)?);
+            Ok(())
+        }),
+        Cmd::Tier { buckets, dry_run } => rt.block_on(async {
+            let engine = build_engine().await?;
+            for bucket in &buckets {
+                let report = engine.tier(bucket, dry_run).await?;
                 println!("{}", serde_json::to_string_pretty(&report)?);
             }
             Ok(())

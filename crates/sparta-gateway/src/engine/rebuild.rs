@@ -70,12 +70,39 @@ impl Engine {
                     .context("manifest restore")?;
                 report.manifests_restored += 1;
 
-                // Chunk locations come straight from the manifest refs.
+                // Chunk locations come straight from the manifest refs
+                // (parent-delta dictionary refs included).
                 for c in &manifest.chunks {
                     self.db
                         .restore_chunk_location(c)
                         .context("chunk location restore")?;
                     report.chunks_indexed += 1;
+                    if let Some(d) = &c.dict {
+                        self.db
+                            .restore_chunk_location(d)
+                            .context("dict chunk location restore")?;
+                    }
+                }
+                // LSH bands for parent detection.
+                if let Some(sig) = manifest
+                    .minhash
+                    .clone()
+                    .and_then(sparta_core::minhash::MinHashSketch::from_signature)
+                {
+                    let _ = self.db.upsert_bands(bucket, &kh, &sig.band_keys());
+                }
+            }
+
+            // Trained dictionaries + rules.
+            if let Ok(Some(rules_json)) = self.get_object_bytes(bucket, keys::DICT_RULES_KEY).await
+            {
+                if let Ok(rules) =
+                    serde_json::from_slice::<std::collections::BTreeMap<String, u64>>(&rules_json)
+                {
+                    for (prefix, dict_id) in rules {
+                        let _ = self.db.upsert_dict_rule(bucket, &prefix, dict_id);
+                        let _ = self.trained_dict(bucket, dict_id).await;
+                    }
                 }
             }
 

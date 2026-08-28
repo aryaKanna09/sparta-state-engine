@@ -16,6 +16,7 @@ csv = { workspace = true }
 flate2 = { workspace = true }
 clap = { workspace = true }
 anyhow = { workspace = true }
+libc = "0.2"
 parquet = { version = "59", default-features = false, features = ["flate2", "flate2-rust_backend", "snap"] }
 
 [dev-dependencies]

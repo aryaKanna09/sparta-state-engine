@@ -7,6 +7,7 @@
 
 use std::fs::{File, OpenOptions};
 use std::io::{BufRead, BufReader, Seek, SeekFrom, Write};
+use std::os::fd::AsRawFd;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
@@ -22,6 +23,32 @@ struct WriterState {
     file: File,
     next_seq: u64,
     last_hash: String,
+    /// File length after our last append; a mismatch means another process
+    /// (gateway vs CLI) appended, and we must re-sync the chain tail.
+    expected_len: u64,
+}
+
+/// Advisory whole-file lock held for the duration of one append. The meter
+/// log has multiple writers by design (the serving gateway plus CLI runs for
+/// gc/train-dict/tier), so every append is serialized across processes.
+struct FlockGuard(std::os::fd::RawFd);
+
+impl FlockGuard {
+    /// The fd stays valid for the guard's lifetime: the caller keeps the
+    /// owning `File` alive across the append.
+    fn exclusive(fd: std::os::fd::RawFd) -> std::io::Result<Self> {
+        let rc = unsafe { libc::flock(fd, libc::LOCK_EX) };
+        if rc != 0 {
+            return Err(std::io::Error::last_os_error());
+        }
+        Ok(Self(fd))
+    }
+}
+
+impl Drop for FlockGuard {
+    fn drop(&mut self) {
+        unsafe { libc::flock(self.0, libc::LOCK_UN) };
+    }
 }
 
 impl MeterWriter {
@@ -36,12 +63,13 @@ impl MeterWriter {
             Err(e) => return Err(e),
         };
         let mut file = OpenOptions::new().create(true).append(true).open(path)?;
-        file.seek(SeekFrom::End(0))?;
+        let expected_len = file.seek(SeekFrom::End(0))?;
         Ok(Self {
             inner: Mutex::new(WriterState {
                 file,
                 next_seq,
                 last_hash,
+                expected_len,
             }),
             path: path.to_path_buf(),
         })
@@ -51,9 +79,32 @@ impl MeterWriter {
         &self.path
     }
 
-    /// Append one record; assigns seq, chains, writes, and flushes.
+    /// Append one record; assigns seq, chains, writes, and flushes. Safe
+    /// across processes: the append is flock-serialized, and if another
+    /// writer grew the file since our last append we re-read only the new
+    /// tail records to pick up the chain where they left it.
     pub fn append(&self, ts_ms: u64, mode: Mode, body: RecordBody) -> Result<u64, MeterError> {
         let mut st = self.inner.lock().unwrap();
+        let _flock = FlockGuard::exclusive(st.file.as_raw_fd())?;
+
+        let actual_len = st.file.metadata()?.len();
+        if actual_len != st.expected_len {
+            // Another process appended (whole lines, under its own flock):
+            // scan from our last known offset to resync seq + last hash.
+            let mut reader = BufReader::new(File::open(&self.path)?);
+            reader.seek(SeekFrom::Start(st.expected_len))?;
+            for line in reader.lines() {
+                let line = line?;
+                if line.trim().is_empty() {
+                    continue;
+                }
+                let rec: MeterRecord = serde_json::from_str(&line)?;
+                st.last_hash = rec.hash.clone();
+                st.next_seq = rec.seq + 1;
+            }
+            st.expected_len = actual_len;
+        }
+
         let record = MeterRecord {
             seq: st.next_seq,
             ts_ms,
@@ -67,6 +118,7 @@ impl MeterWriter {
         st.file.write_all(line.as_bytes())?;
         st.file.write_all(b"\n")?;
         st.file.flush()?;
+        st.expected_len = st.file.metadata()?.len();
         st.last_hash = record.hash.clone();
         st.next_seq += 1;
         Ok(record.seq)
@@ -194,6 +246,21 @@ mod tests {
         }
         let summary = verify_file(&path).unwrap();
         assert_eq!(summary.record_count, 11);
+    }
+
+    #[test]
+    fn interleaved_writers_keep_one_chain() {
+        // Two MeterWriter instances on the same file (gateway + CLI shape).
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("meter.jsonl");
+        let a = MeterWriter::open(&path).unwrap();
+        let b = MeterWriter::open(&path).unwrap();
+        for i in 0..6 {
+            let w = if i % 2 == 0 { &a } else { &b };
+            w.append(1000 + i, Mode::Active, op_body(i)).unwrap();
+        }
+        let summary = verify_file(&path).unwrap();
+        assert_eq!(summary.record_count, 6, "chain must stay unbroken");
     }
 
     #[test]

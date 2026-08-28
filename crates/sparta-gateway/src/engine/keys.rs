@@ -14,6 +14,8 @@ pub const GC_CANDIDATE_PREFIX: &str = "_sparta/gc/candidates/";
 /// Reserved for the meter-log mirroring path.
 #[allow(dead_code)]
 pub const METER_PREFIX: &str = "_sparta/meter/";
+pub const DICT_PREFIX: &str = "_sparta/dicts/";
+pub const DICT_RULES_KEY: &str = "_sparta/dicts/rules.json";
 
 pub fn keyhash(key: &str) -> String {
     ChunkHash::of(key.as_bytes()).to_hex()

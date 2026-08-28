@@ -62,6 +62,7 @@ fn ingest(
                     data_len: entry.data_len,
                     codec: entry.codec,
                     dict_id: entry.dict_id,
+                    dict: None,
                 },
             );
         }
