@@ -1,0 +1,16 @@
+[package]
+name = "sparta-testkit"
+description = "Fixture generators, fault injection harness, and MinIO integration helpers."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+sparta-core = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+rand = { workspace = true }
+flate2 = { workspace = true }
+tempfile = { workspace = true }

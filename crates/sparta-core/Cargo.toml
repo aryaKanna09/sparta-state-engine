@@ -1,0 +1,21 @@
+[package]
+name = "sparta-core"
+description = "Sparta State Engine core: chunking, hashing, compression normalization, packfiles, manifests. No I/O beyond std::io traits."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+fastcdc = { workspace = true }
+blake3 = { workspace = true }
+zstd = { workspace = true }
+flate2 = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+hex = { workspace = true }
+
+[dev-dependencies]
+proptest = { workspace = true }
+rand = { workspace = true }

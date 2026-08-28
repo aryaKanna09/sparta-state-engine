@@ -1,0 +1,50 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/sparta-core",
+    "crates/sparta-scanner",
+    "crates/sparta-gateway",
+    "crates/sparta-meter",
+    "crates/sparta-testkit",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "UNLICENSED"
+repository = "https://github.com/usesparta/sparta-state-engine"
+authors = ["Sparta AI <eng@usesparta.co>"]
+
+[workspace.dependencies]
+sparta-core = { path = "crates/sparta-core" }
+sparta-meter = { path = "crates/sparta-meter" }
+sparta-testkit = { path = "crates/sparta-testkit" }
+
+fastcdc = "3"
+blake3 = { version = "1", features = ["serde"] }
+zstd = "0.13"
+flate2 = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+anyhow = "1"
+hex = "0.4"
+bytes = "1"
+rusqlite = { version = "0.32", features = ["bundled"] }
+clap = { version = "4", features = ["derive", "env"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+tokio = { version = "1", features = ["full"] }
+futures = "0.3"
+rand = "0.8"
+tempfile = "3"
+proptest = "1"
+csv = "1"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+
+# Fast-ish debug builds for the big test fixtures.
+[profile.dev.package."*"]
+opt-level = 2

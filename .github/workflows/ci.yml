@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: "1"
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: rustfmt
+        run: cargo fmt --all -- --check
+      - name: clippy (deny warnings)
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: unit and property tests
+        run: cargo test --workspace
+
+  # Integration tests against a real MinIO server: gateway passthrough,
+  # fault injection suite (merge gate from M2 on), and the fixture fleet
+  # SRF benchmark (asserted from M4 on).
+  integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: install MinIO
+        run: |
+          curl -sSfL -o /usr/local/bin/minio \
+            https://dl.min.io/server/minio/release/linux-amd64/minio
+          chmod +x /usr/local/bin/minio
+      - name: integration tests (MinIO-backed)
+        run: cargo test --workspace -- --ignored --test-threads=1
+        env:
+          SPARTA_TEST_MINIO: /usr/local/bin/minio

@@ -1,0 +1,10 @@
+/target
+**/*.rs.bk
+.DS_Store
+/tools/bin
+/fixtures/generated
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+.env
+.claude/settings.local.json
