@@ -33,14 +33,22 @@ pub struct GatewayConfig {
     pub db_path: String,
     pub meter_path: String,
     pub meter_level_interval_s: u64,
+    /// Max objects pulled per ingest batch.
+    pub ingest_batch: usize,
+    /// Objects larger than this stay raw passthrough (no in-memory ingest).
+    pub ingest_max_bytes: u64,
+    /// Parallel coalesced fetches on the restore path.
+    pub restore_concurrency: usize,
+    /// Max gap between chunks merged into one ranged GET.
+    pub coalesce_gap_bytes: u64,
     pub force_path_style: bool,
     pub shadow_chunking: bool,
     /// Per-attempt timeout for upstream calls, ms (0 = SDK default).
     pub upstream_attempt_timeout_ms: u64,
     /// Max attempts for upstream calls (SDK retry layer).
     pub upstream_max_attempts: u32,
-    // Read from M4 on (GC, chunk cache, normalization bound).
-    #[allow(dead_code)]
+    /// Compact a pack once this fraction of its bytes is unreferenced.
+    pub gc_compact_threshold: f64,
     pub gc_grace_days: u64,
     #[allow(dead_code)]
     pub cache_dir: Option<String>,
@@ -112,6 +120,22 @@ impl GatewayConfig {
                 .ok()
                 .and_then(|v| v.parse().ok())
                 .unwrap_or(3600),
+            ingest_batch: std::env::var("SPARTA_INGEST_BATCH")
+                .ok()
+                .and_then(|v| v.parse().ok())
+                .unwrap_or(64),
+            ingest_max_bytes: std::env::var("SPARTA_INGEST_MAX_BYTES")
+                .ok()
+                .and_then(|v| v.parse().ok())
+                .unwrap_or(2 * 1024 * 1024 * 1024),
+            restore_concurrency: std::env::var("SPARTA_RESTORE_CONCURRENCY")
+                .ok()
+                .and_then(|v| v.parse().ok())
+                .unwrap_or(8),
+            coalesce_gap_bytes: std::env::var("SPARTA_COALESCE_GAP_BYTES")
+                .ok()
+                .and_then(|v| v.parse().ok())
+                .unwrap_or(1024 * 1024),
             force_path_style: env_flag("SPARTA_FORCE_PATH_STYLE", true),
             shadow_chunking: env_flag("SPARTA_SHADOW_CHUNKING", true),
             upstream_attempt_timeout_ms: std::env::var("SPARTA_UPSTREAM_ATTEMPT_TIMEOUT_MS")
@@ -123,6 +147,10 @@ impl GatewayConfig {
                 .and_then(|v| v.parse::<u32>().ok())
                 .map(|r| r + 1)
                 .unwrap_or(4),
+            gc_compact_threshold: std::env::var("SPARTA_GC_COMPACT_THRESHOLD")
+                .ok()
+                .and_then(|v| v.parse().ok())
+                .unwrap_or(0.3),
             gc_grace_days: std::env::var("SPARTA_GC_GRACE_DAYS")
                 .ok()
                 .and_then(|v| v.parse().ok())

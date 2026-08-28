@@ -174,3 +174,65 @@ The CUR loader derives effective rates from stable lineItem columns only
 Requests-Tier1/Tier2, and DataTransfer-Out. Anything absent keeps the built-in
 list price. Full CUR schema fidelity (RI/SP amortization, tiered rediscovery)
 is out of MVP scope and noted in the rate card's `source` field.
+
+## D-022: Active-mode writes are write-through with background ingest
+A synchronous ingest path would either seal a tiny pack per PUT (violating the
+32–64 MB pack spec and multiplying request overhead) or delay the client's ack
+until a shared pack seals (unbounded latency, durability risk). Instead every
+active-mode write (single PUT and multipart alike) passes through to the
+upstream raw — the client's ack means exactly what raw S3 means — and an
+ingest queue entry is recorded. A single background worker drains the queue in
+order: GET raw → sniff/normalize/chunk/dedup → append to the shared pack
+builder (sealed at 48 MB across objects, "written in manifest order") → upload
+packs → write manifests → delete raws. Reads are manifest-first with raw
+fallback, so every moment of the pipeline is consistent; a crash anywhere
+leaves the raw in place (no loss, savings deferred). Per-key async locks
+serialize ingest/delete/overwrite races (single-node gateway per the
+non-goals). Cost: a transient raw-storage window and one extra GET+DELETE per
+object, which the meter records honestly as engine overhead.
+
+## D-023: Engine object layout under _sparta/
+`_sparta/packs/<blake3-of-pack>.pack`, `_sparta/manifests/<blake3-of-key>.json`
+(latest version only; the manifest embeds the real key, upstream ETag, content
+type, and user metadata), `_sparta/gc/candidates/<pack>.json` two-phase GC
+markers, `_sparta/meter/` mirrored meter log. Listings hide `_sparta/` from
+clients and merge upstream raw objects with engine manifests (manifest wins on
+key collision); delimiter grouping is applied over the merged stream with a
+combined continuation token.
+
+## D-024: GET verification granularity
+Full-object GETs stream all chunks through a BLAKE3 hasher and hold back the
+final chunk until the object hash matches the manifest; mismatch = CRITICAL
+log, manifest quarantined, raw fallback if it exists. Ranged GETs verify each
+served chunk's own BLAKE3 (decode_chunk always does) but cannot verify the
+whole object without reading it; this is recorded as the spec-conformant
+interpretation of "every GET verifies" for ranges.
+
+## D-025: In-memory ingest with a size bound
+The ingest worker materializes each raw object in memory (normalization needs
+the full stream anyway, and chunk/pack work is slice-based). Objects above
+`SPARTA_INGEST_MAX_BYTES` (default 2 GiB) stay raw passthrough forever: no
+loss, no savings, logged at info. Disk-spooled streaming ingest for very large
+objects is deliberate future work; for agent-fleet workloads (snapshots,
+checkpoints in the hundreds of MB) the bound is rarely met.
+
+## D-026: GC includes garbage-fraction compaction
+Packs interleave chunks from many objects, so deleting a subset of objects
+strands chunks *inside* still-referenced packs — pack-level sweeping alone
+would never reclaim them, and the spec's "removes only unreferenced chunks"
+would be hollow. GC therefore runs three passes per sweep: (1) mark builds
+per-pack referenced-chunk sets from all manifests; (2) compaction rewrites any
+pack whose unreferenced fraction ≥ `SPARTA_GC_COMPACT_THRESHOLD` (default
+0.3) — live chunks are copied (already-encoded, no recompression) into fresh
+packs, referencing manifests are rewritten, and the old pack becomes
+unreferenced; (3) the two-phase sweep marks unreferenced packs with a bucket
+candidate marker and deletes them once the marker outlives
+`SPARTA_GC_GRACE_DAYS`. New packs before manifests before deletion makes every
+crash window safe, and dry-run reports all three phases without writing.
+
+## D-027: Merged-listing continuation tokens
+The combined token is base64 of both sides' cursors (upstream `start-after`
+string + engine DB cursor); skipping past an emitted CommonPrefix advances a
+cursor to `prefix + U+10FFFF`, which sorts after every member key. This makes
+pages restartable without server-side listing state, at the cost of one extra
+upstream list call per page.

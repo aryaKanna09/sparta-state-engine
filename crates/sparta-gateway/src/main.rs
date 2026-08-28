@@ -4,9 +4,11 @@
 //! Invariant 0 (bypass flag, panic containment, health endpoints), and local
 //! shadow statistics. Active-mode dedup lands at M4.
 
+mod active;
 mod chunkstream;
 mod config;
 mod db;
+mod engine;
 mod http;
 mod service;
 mod shadow;
@@ -37,8 +39,20 @@ enum Cmd {
     Serve,
     /// Print shadow-mode statistics from the local DB as JSON.
     Stats,
-    /// Rebuild the local metadata DB from the bucket alone (M4).
-    RebuildIndex,
+    /// Rebuild the local metadata DB from the bucket alone.
+    RebuildIndex {
+        /// Buckets to scan (repeatable).
+        #[arg(long = "bucket", required = true)]
+        buckets: Vec<String>,
+    },
+    /// Garbage-collect unreferenced packs (two-phase mark and sweep).
+    Gc {
+        #[arg(long = "bucket", required = true)]
+        buckets: Vec<String>,
+        /// Report what would happen without writing or deleting anything.
+        #[arg(long)]
+        dry_run: bool,
+    },
 }
 
 fn main() -> Result<()> {
@@ -56,10 +70,65 @@ fn main() -> Result<()> {
     match args.cmd.unwrap_or(Cmd::Serve) {
         Cmd::Serve => rt.block_on(serve()),
         Cmd::Stats => stats(),
-        Cmd::RebuildIndex => {
-            anyhow::bail!("rebuild-index arrives with active mode (M4)")
-        }
+        Cmd::RebuildIndex { buckets } => rt.block_on(async {
+            let engine = build_engine().await?;
+            let report = engine.rebuild_index(&buckets).await?;
+            println!("{}", serde_json::to_string_pretty(&report)?);
+            Ok(())
+        }),
+        Cmd::Gc { buckets, dry_run } => rt.block_on(async {
+            let engine = build_engine().await?;
+            for bucket in &buckets {
+                let report = engine.gc(bucket, dry_run).await?;
+                println!("{}", serde_json::to_string_pretty(&report)?);
+            }
+            Ok(())
+        }),
     }
+}
+
+/// Construct an Engine for CLI subcommands (no HTTP server).
+async fn build_engine() -> Result<Arc<engine::Engine>> {
+    let cfg = Arc::new(GatewayConfig::from_env()?);
+    let db = Arc::new(Db::open(Path::new(&cfg.db_path))?);
+    let meter = Arc::new(sparta_meter::log::MeterWriter::open(Path::new(
+        &cfg.meter_path,
+    ))?);
+    let client = build_upstream_client(&cfg).await;
+    Ok(Arc::new(engine::Engine::new(db, client, meter, cfg)))
+}
+
+/// Upstream S3 client shared by serve and the CLI subcommands.
+async fn build_upstream_client(cfg: &GatewayConfig) -> aws_sdk_s3::Client {
+    let mut loader = aws_config::defaults(aws_config::BehaviorVersion::latest())
+        .region(aws_config::Region::new(cfg.upstream_region.clone()))
+        .endpoint_url(cfg.upstream_endpoint.clone());
+    if let (Some(ak), Some(sk)) = (&cfg.upstream_access_key, &cfg.upstream_secret_key) {
+        loader = loader.credentials_provider(aws_sdk_s3::config::Credentials::new(
+            ak.clone(),
+            sk.clone(),
+            None,
+            None,
+            "sparta-gateway",
+        ));
+    }
+    let shared = loader.load().await;
+    let mut conf_builder = aws_sdk_s3::config::Builder::from(&shared)
+        .force_path_style(cfg.force_path_style)
+        .retry_config(
+            aws_sdk_s3::config::retry::RetryConfig::standard()
+                .with_max_attempts(cfg.upstream_max_attempts),
+        );
+    if cfg.upstream_attempt_timeout_ms > 0 {
+        conf_builder = conf_builder.timeout_config(
+            aws_sdk_s3::config::timeout::TimeoutConfig::builder()
+                .operation_attempt_timeout(std::time::Duration::from_millis(
+                    cfg.upstream_attempt_timeout_ms,
+                ))
+                .build(),
+        );
+    }
+    aws_sdk_s3::Client::from_conf(conf_builder.build())
 }
 
 fn stats() -> Result<()> {
@@ -127,13 +196,10 @@ fn spawn_level_projection(
 
 async fn serve() -> Result<()> {
     let cfg = Arc::new(GatewayConfig::from_env()?);
-    if cfg.active_mode {
-        anyhow::bail!("SPARTA_MODE=active arrives with M4; run shadow mode");
-    }
     info!(
         upstream = cfg.upstream_endpoint,
         listen = cfg.listen,
-        mode = "shadow",
+        mode = if cfg.active_mode { "active" } else { "shadow" },
         "starting sparta-gateway"
     );
 
@@ -142,50 +208,38 @@ async fn serve() -> Result<()> {
         sparta_meter::log::MeterWriter::open(Path::new(&cfg.meter_path))
             .with_context(|| format!("open meter log {}", cfg.meter_path))?,
     );
-    spawn_level_projection(
-        Arc::clone(&db),
-        Arc::clone(&meter),
-        cfg.meter_level_interval_s,
-    );
+    if !cfg.active_mode {
+        // Shadow: hourly projected level gauge (active emits metered actuals).
+        spawn_level_projection(
+            Arc::clone(&db),
+            Arc::clone(&meter),
+            cfg.meter_level_interval_s,
+        );
+    }
 
-    // Upstream client (the customer's real endpoint).
-    let mut loader = aws_config::defaults(aws_config::BehaviorVersion::latest())
-        .region(aws_config::Region::new(cfg.upstream_region.clone()))
-        .endpoint_url(cfg.upstream_endpoint.clone());
-    if let (Some(ak), Some(sk)) = (&cfg.upstream_access_key, &cfg.upstream_secret_key) {
-        loader = loader.credentials_provider(aws_sdk_s3::config::Credentials::new(
-            ak.clone(),
-            sk.clone(),
-            None,
-            None,
-            "sparta-gateway",
+    let client = build_upstream_client(&cfg).await;
+    let proxy = s3s_aws::Proxy::from(client.clone());
+
+    let engine = if cfg.active_mode {
+        let engine = Arc::new(engine::Engine::new(
+            Arc::clone(&db),
+            client,
+            Arc::clone(&meter),
+            Arc::clone(&cfg),
         ));
-    }
-    let shared = loader.load().await;
-    let mut conf_builder = aws_sdk_s3::config::Builder::from(&shared)
-        .force_path_style(cfg.force_path_style)
-        .retry_config(
-            aws_sdk_s3::config::retry::RetryConfig::standard()
-                .with_max_attempts(cfg.upstream_max_attempts),
-        );
-    if cfg.upstream_attempt_timeout_ms > 0 {
-        conf_builder = conf_builder.timeout_config(
-            aws_sdk_s3::config::timeout::TimeoutConfig::builder()
-                .operation_attempt_timeout(std::time::Duration::from_millis(
-                    cfg.upstream_attempt_timeout_ms,
-                ))
-                .build(),
-        );
-    }
-    let s3_conf = conf_builder.build();
-    let client = aws_sdk_s3::Client::from_conf(s3_conf);
-    let proxy = s3s_aws::Proxy::from(client);
+        // The write-side dedup pipeline (D-022).
+        tokio::spawn(engine::ingest::run_worker(Arc::clone(&engine)));
+        Some(engine)
+    } else {
+        None
+    };
 
     let sparta = service::SpartaS3 {
         inner: proxy,
         db: Arc::clone(&db),
         meter,
         cfg: Arc::clone(&cfg),
+        engine,
     };
 
     let mut builder = S3ServiceBuilder::new(sparta);

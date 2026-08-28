@@ -20,8 +20,10 @@ use tracing::{error, warn};
 use sparta_meter::log::MeterWriter;
 use sparta_meter::record::{Mode, RecordBody};
 
+use crate::active;
 use crate::config::{bypass_requested, GatewayConfig};
 use crate::db::Db;
+use crate::engine::Engine;
 use crate::shadow;
 
 pub struct SpartaS3 {
@@ -29,6 +31,15 @@ pub struct SpartaS3 {
     pub db: Arc<Db>,
     pub meter: Arc<MeterWriter>,
     pub cfg: Arc<GatewayConfig>,
+    /// Present in active mode only.
+    pub engine: Option<Arc<Engine>>,
+}
+
+fn etag_string(e: &Option<s3s::dto::ETag>) -> Option<String> {
+    e.as_ref().map(|t| match t {
+        s3s::dto::ETag::Strong(v) => format!("\"{v}\""),
+        s3s::dto::ETag::Weak(v) => format!("W/\"{v}\""),
+    })
 }
 
 fn now_ms() -> u64 {
@@ -51,6 +62,14 @@ impl SpartaS3 {
         if std::panic::catch_unwind(AssertUnwindSafe(f)).is_err() {
             error!(what, "internal logic panicked; continuing as passthrough");
         }
+    }
+
+    /// The engine, when active mode is on and bypass is off.
+    fn active_engine(&self) -> Option<&Arc<Engine>> {
+        if bypass_requested() {
+            return None;
+        }
+        self.engine.as_ref()
     }
 
     /// Meter a non-streaming client operation (request counts by type live in
@@ -100,6 +119,17 @@ impl S3 for SpartaS3 {
         mut req: S3Request<s3s::dto::PutObjectInput>,
     ) -> S3Result<S3Response<s3s::dto::PutObjectOutput>> {
         self.note("op_put_object");
+        if let Some(engine) = self.active_engine() {
+            let bucket = req.input.bucket.clone();
+            let key = req.input.key.clone();
+            self.meter_op("put_object", &bucket);
+            let resp = proxied(self.inner.put_object(req)).await?;
+            let etag = etag_string(&resp.output.e_tag);
+            let engine = Arc::clone(engine);
+            // Post-ack work: enqueue can never fail the request.
+            active::enqueue_written(&engine, &bucket, &key, etag.as_deref()).await;
+            return Ok(resp);
+        }
         if !bypass_requested() && self.cfg.shadow_chunking {
             let db = Arc::clone(&self.db);
             let meter = Arc::clone(&self.meter);
@@ -152,6 +182,16 @@ impl S3 for SpartaS3 {
         req: S3Request<s3s::dto::GetObjectInput>,
     ) -> S3Result<S3Response<s3s::dto::GetObjectOutput>> {
         self.note("op_get_object");
+        if let Some(engine) = self.active_engine() {
+            match active::get_object(engine, &req.input).await {
+                Ok(Some(output)) => return Ok(S3Response::new(output)),
+                Ok(None) => {}
+                Err(e) => {
+                    warn!(key = req.input.key, error = %e,
+                          "engine GET failed; falling back to raw passthrough");
+                }
+            }
+        }
         let bucket = req.input.bucket.clone();
         let mut resp = proxied(self.inner.get_object(req)).await?;
         if !bypass_requested() {
@@ -182,6 +222,16 @@ impl S3 for SpartaS3 {
     ) -> S3Result<S3Response<s3s::dto::HeadObjectOutput>> {
         self.note("op_head_object");
         self.meter_op("head_object", &req.input.bucket);
+        if let Some(engine) = self.active_engine() {
+            match active::head_object(engine, &req.input).await {
+                Ok(Some(output)) => return Ok(S3Response::new(output)),
+                Ok(None) => {}
+                Err(e) => {
+                    warn!(key = req.input.key, error = %e,
+                          "engine HEAD failed; falling back to raw passthrough");
+                }
+            }
+        }
         proxied(self.inner.head_object(req)).await
     }
 
@@ -191,6 +241,11 @@ impl S3 for SpartaS3 {
     ) -> S3Result<S3Response<s3s::dto::DeleteObjectOutput>> {
         self.note("op_delete_object");
         self.meter_op("delete_object", &req.input.bucket);
+        if let Some(engine) = self.active_engine() {
+            // Engine-side cleanup first; the raw delete proxies below either
+            // way (S3 DELETE is idempotent and 204s on missing keys).
+            active::delete_engine_object(engine, &req.input.bucket, &req.input.key).await;
+        }
         proxied(self.inner.delete_object(req)).await
     }
 
@@ -209,6 +264,15 @@ impl S3 for SpartaS3 {
     ) -> S3Result<S3Response<s3s::dto::CompleteMultipartUploadOutput>> {
         self.note("op_complete_multipart_upload");
         self.meter_op("complete_multipart_upload", &req.input.bucket);
+        if let Some(engine) = self.active_engine() {
+            let bucket = req.input.bucket.clone();
+            let key = req.input.key.clone();
+            let engine = Arc::clone(engine);
+            let resp = proxied(self.inner.complete_multipart_upload(req)).await?;
+            let etag = etag_string(&resp.output.e_tag);
+            active::enqueue_written(&engine, &bucket, &key, etag.as_deref()).await;
+            return Ok(resp);
+        }
         proxied(self.inner.complete_multipart_upload(req)).await
     }
 
@@ -227,6 +291,16 @@ impl S3 for SpartaS3 {
     ) -> S3Result<S3Response<s3s::dto::ListObjectsV2Output>> {
         self.note("op_list_objects_v2");
         self.meter_op("list_objects_v2", &req.input.bucket);
+        if let Some(engine) = self.active_engine() {
+            match active::list_objects_v2(engine, &req.input).await {
+                Ok(Some(output)) => return Ok(S3Response::new(output)),
+                Ok(None) => {}
+                Err(e) => {
+                    warn!(bucket = req.input.bucket, error = %e,
+                          "merged listing failed; falling back to raw passthrough");
+                }
+            }
+        }
         proxied(self.inner.list_objects_v2(req)).await
     }
 
@@ -236,6 +310,29 @@ impl S3 for SpartaS3 {
     ) -> S3Result<S3Response<s3s::dto::CopyObjectOutput>> {
         self.note("op_copy_object");
         self.meter_op("copy_object", &req.input.bucket);
+        if let Some(engine) = self.active_engine() {
+            match active::copy_object(engine, &req.input).await {
+                Ok(Some(output)) => return Ok(S3Response::new(output)),
+                Ok(None) => {
+                    // Raw source: proxy the copy, then ingest the new dest.
+                    let bucket = req.input.bucket.clone();
+                    let key = req.input.key.clone();
+                    let engine = Arc::clone(engine);
+                    let resp = proxied(self.inner.copy_object(req)).await?;
+                    let etag = resp
+                        .output
+                        .copy_object_result
+                        .as_ref()
+                        .and_then(|r| etag_string(&r.e_tag));
+                    active::enqueue_written(&engine, &bucket, &key, etag.as_deref()).await;
+                    return Ok(resp);
+                }
+                Err(e) => {
+                    warn!(key = req.input.key, error = %e,
+                          "engine copy failed; falling back to raw passthrough");
+                }
+            }
+        }
         proxied(self.inner.copy_object(req)).await
     }
 

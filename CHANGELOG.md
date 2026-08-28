@@ -97,3 +97,38 @@ DECISIONS.md D-001..D-008.
   hourly projected Level gauge to the same log active mode will use; meter
   failures can never fail a request. Integration test runs the boto3 workflow
   then `sparta-meter verify` against the produced log.
+
+## M4 — Activation: write-side dedup (2026-08-28)
+
+Active mode (`SPARTA_MODE=active`): the engine becomes the storage path for
+newly written objects, with Invariant 0 intact end to end.
+
+- **Write-through ingest** (D-022): client writes pass through raw (identical
+  ack semantics to S3, single PUT and multipart alike), then a background
+  worker ingests in order — sniff/normalize/chunk/dedup into shared 48 MB
+  packs, manifests, then raw deletion. Crash anywhere = raw stays, no loss.
+- **Restore path**: manifest-first GETs with per-chunk cache lookups,
+  adjacent-range coalescing into single ranged GETs (≤32 MB groups), bounded
+  parallel prefetch, streaming reconstruction; full GETs verify the object
+  BLAKE3 before the final byte (hold-back frame), recipe objects are rebuilt
+  and re-verified post-recompression; mismatch = CRITICAL log + quarantine +
+  raw fallback (D-024). Ranged GETs serve chunk-verified subranges.
+- **NVMe LRU chunk cache** with hash verification on read, atomic writes, and
+  pinning via `SPARTA_PIN_PREFIXES`.
+- **Full data plane for engine objects**: HEAD from manifests (sizes, ETags,
+  content type, user metadata), DELETE (manifest + raw + queue), same-bucket
+  COPY as manifest clone (zero data movement), cross-bucket COPY by
+  materialization, merged ListObjectsV2 (upstream ∪ manifests, `_sparta/`
+  hidden, engine wins collisions, delimiter grouping, combined continuation
+  tokens, D-027).
+- **GC** (D-026): chunk-refcounted mark → garbage-fraction compaction
+  (rewrites packs, updates manifests) → two-phase sweep with bucket candidate
+  markers and `SPARTA_GC_GRACE_DAYS`; `--dry-run` reports all phases; every
+  sweep logged to the meter.
+- **rebuild-index**: full local DB reconstruction from bucket manifests alone.
+- Acceptance (all green against MinIO): lifecycle test (recipe path, ranges,
+  metadata, listing, copy, delete); **fleet SRF 6.89× (target ≥5)** on the
+  200-snapshot/3-template fixture incl. gzip variants; boto3 workflow in
+  active mode; byte identity after rebuild-index on a deleted DB; GC dry-run
+  + real two-phase run shrinking pack bytes with survivors intact; fault
+  suite incl. dead-DB + panicking chunker in active mode.

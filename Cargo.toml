@@ -51,6 +51,7 @@ rand = "0.8"
 tempfile = "3"
 proptest = "1"
 csv = "1"
+base64 = "0.22"
 
 [profile.release]
 lto = "thin"
