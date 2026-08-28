@@ -20,6 +20,11 @@ aws-config = { workspace = true }
 aws-sdk-s3 = { workspace = true }
 tracing = { workspace = true }
 clap = { workspace = true }
+hyper = { workspace = true }
+hyper-util = { workspace = true }
+http = { workspace = true }
+http-body-util = { workspace = true }
+bytes = { workspace = true }
 
 [[bin]]
 name = "sparta-fixtures"

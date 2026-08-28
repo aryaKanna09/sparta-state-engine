@@ -33,6 +33,15 @@ bytes = "1"
 rusqlite = { version = "0.32", features = ["bundled"] }
 aws-config = { version = "1", features = ["behavior-version-latest"] }
 aws-sdk-s3 = { version = "1", features = ["behavior-version-latest"] }
+s3s = "0.15"
+s3s-aws = "0.15"
+hyper = { version = "1", features = ["full"] }
+hyper-util = { version = "0.1", features = ["full"] }
+http = "1"
+http-body = "1"
+http-body-util = "0.1"
+async-trait = "0.1"
+pin-project-lite = "0.2"
 clap = { version = "4", features = ["derive", "env"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }

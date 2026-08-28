@@ -46,7 +46,10 @@ jobs:
           curl -sSfL -o /usr/local/bin/minio \
             https://dl.min.io/server/minio/release/linux-amd64/minio
           chmod +x /usr/local/bin/minio
-      - name: integration tests (MinIO-backed)
-        run: cargo test --workspace -- --ignored --test-threads=1
+      - name: install client tooling (boto3, aws CLI)
+        run: pip3 install --quiet boto3 awscli
+      - name: integration tests (MinIO-backed, incl. fault injection suite)
+        run: cargo test --workspace -- --ignored --test-threads=2
         env:
           SPARTA_TEST_MINIO: /usr/local/bin/minio
+          SPARTA_E2E_SIZE_MB: "256"

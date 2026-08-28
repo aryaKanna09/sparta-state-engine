@@ -95,3 +95,50 @@ the sample and documented as a conservative lower bound on fleet SRF; tag
 exclusion rules are evaluated on sampled objects only (GetObjectTagging per
 object). S3 Inventory support is CSV format (the S3 default); ORC/Parquet
 inventories are out of MVP scope.
+
+## D-012: Bypass file in addition to the env flag
+`SPARTA_BYPASS=1` is honored, but a running process cannot observe external
+edits to its environment, so the env flag alone cannot deliver "no restart
+required" on any real platform. Added `SPARTA_BYPASS_FILE`: when set, the
+existence of that file (touch/rm, or a ConfigMap mount) toggles dumb-proxy
+mode per request with zero restart. Both paths are covered by the fault suite.
+
+## D-013: Shadow-mode savings estimate is dedup-only
+Shadow taps forward bytes as they arrive and record chunk hashes + lengths;
+compressing every chunk inline would sit zstd directly in the customer's write
+path for a mode whose contract is "untouched passthrough". Shadow SRF is
+therefore reported as a dedup-only lower bound (stored_est = raw_len, no
+compression credit) and labeled as such; the scanner (Shadow A) and active
+mode (M4) provide the compressed view. Conservative by design: the meter must
+never report savings shadow mode didn't prove.
+
+## D-014: Shadow taps do not normalize compressed uploads
+Normalization requires the complete stream plus decompress-recompress-verify;
+doing that inline in shadow mode would buffer whole objects. Shadow chunking
+runs on the raw streamed bytes (compression detected and noted). Effect: the
+shadow estimate undercounts redundancy hidden behind differing compression —
+again a conservative lower bound.
+
+## D-015: Fault-suite hooks compiled in, inert without env vars
+`SPARTA_FAULT_PANIC_TAP=1` panics inside the tap on first feed;
+`SPARTA_FAULT_DB_FAIL=1` fails every metadata-DB entry point. Both are checked
+per request/stream and drive the real error-containment paths (not mocks);
+they are no-ops unless explicitly set. Chosen over conditional compilation so
+the shipped binary's fault handling is exactly what the suite proved.
+
+## D-016: Upstream fault semantics
+Transient upstream faults (500s, connection drops, slow first attempts) are
+absorbed by the gateway's SDK retry layer (`SPARTA_UPSTREAM_MAX_RETRIES`,
+default 3 retries; optional `SPARTA_UPSTREAM_ATTEMPT_TIMEOUT_MS`). A hard
+upstream outage is forwarded to the client — behavior parity with the raw
+endpoint (the gateway must never fail requests the raw endpoint would serve,
+and cannot serve requests the raw endpoint couldn't). `/readyz` flips to 503
+on upstream unreachability so load balancers fail over to the raw endpoint.
+
+## D-017: Delegation surface generated as literal code
+`#[async_trait]` expands before `macro_rules!` inside an impl, so macro-based
+method delegation cannot compile. The 104 passthrough methods are generated as
+literal code (script in the commit history); every S3 operation the `s3s-aws`
+proxy supports — including ones the engine will never optimize — delegates to
+the upstream with op counting and a panic net, satisfying "unsupported
+operations must transparently proxy".

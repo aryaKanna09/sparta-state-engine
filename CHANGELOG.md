@@ -53,3 +53,27 @@ DECISIONS.md D-001..D-008.
 - Acceptance: end-to-end MinIO integration test (SRF, CI bracketing,
   normalization, exclusions, clusters, HTML). Scale run: 100,000-object /
   6.25 GiB bucket scanned at 1% sampling in 28.5 s wall clock (target: <1 h).
+
+## M2 — Gateway passthrough and Shadow B (2026-08-27)
+
+`sparta-gateway`: full S3 surface via s3s/s3s-aws with Invariant 0.
+
+- All 107 S3 operations the upstream proxy supports delegate transparently
+  (literal generated delegation, D-017); PUT/GET/UploadPart intercepted for
+  shadow observation only.
+- Shadow taps: incremental spec-parameter CDC on streamed bodies (byte-
+  identical to one-shot chunking, bounded memory), forwarding untouched;
+  panic-disarmed per stream; stats flushed on end-of-stream or drop.
+- Invariant 0: panic nets on every handler; `SPARTA_BYPASS=1` plus
+  `SPARTA_BYPASS_FILE` for restart-free per-request bypass (D-012);
+  `/healthz` + `/readyz` with a background upstream reachability probe;
+  configurable upstream retries/attempt timeout (D-016).
+- Local SQLite (WAL) shadow stats: op counts, bytes in/out, dedup-only shadow
+  SRF lower bound (D-013/D-014); `sparta-gateway stats` prints JSON.
+- Testkit: fault-injecting HTTP proxy (500s, connection drops, delays, hard
+  outage), fault hooks for dead-DB and panicking-chunker (D-015), boto3 and
+  aws-CLI workflow scripts.
+- Integration suite (CI merge gate): boto3 workflow (multipart, list, ranged
+  GET, multipart copy, delete, SHA-256 verified) clean and with all fault
+  classes active at once; aws CLI workflow; per-fault matrix; bypass-file
+  toggling; readyz failover; passthrough overhead sanity check.

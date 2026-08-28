@@ -8,3 +8,4 @@
 *.sqlite-shm
 .env
 .claude/settings.local.json
+tools/venv
