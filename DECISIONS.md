@@ -266,3 +266,25 @@ a wrong parent records wrong lineage. Deployments with small objects should
 lower it explicitly. Tiering transitions a pack only when every referencing
 manifest matches the rule prefix and the oldest referencing manifest exceeds
 the age — mixed packs never transition (correctness over ratio).
+
+## D-031: QUICKSTART ships two equal paths
+Path A is the specified docker-compose stack (gateway + MinIO + two seeders:
+a raw corpus for the Shadow A scanner demo and a through-the-gateway corpus
+for activation). Path B (`tools/quickstart-native.sh`) does the identical
+journey with native binaries and the official MinIO binary — it exists because
+this build machine has no Docker (D-002), and it doubles as the executable
+form of the final acceptance test. Measured on this machine: 27 s with warm
+binaries; the cold-build time is recorded in CHANGELOG. The native script is
+also the honest demo of the product thesis: the scanner's predicted SRF-S and
+the engine's delivered SRF match to the second decimal on the fixture fleet,
+because both implement the same published measurement spec.
+
+## D-032: Terraform module scope
+ECS Fargate service + internal NLB + bucket-scoped task role into an existing
+VPC, single task (single-writer metadata). The NLB health check targets
+`/readyz` so upstream failure drains the target group; wiring the raw-endpoint
+failover target group is documented (OPERATIONS §2) rather than templated —
+it depends on whether the customer uses interface VPC endpoints, and shipping
+a wrong default here would be worse than a documented pattern. The module is
+authored and validated by review; it has not been applied against a live AWS
+account from this environment.

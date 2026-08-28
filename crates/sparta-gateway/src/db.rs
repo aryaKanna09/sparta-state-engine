@@ -482,6 +482,13 @@ impl Db {
         Ok(())
     }
 
+    pub fn ingest_queue_len(&self) -> Result<u64> {
+        db_fault()?;
+        let conn = self.conn.lock().unwrap();
+        let n: i64 = conn.query_row("SELECT COUNT(*) FROM ingest_queue", [], |r| r.get(0))?;
+        Ok(n as u64)
+    }
+
     /// (logical stored, physical stored) for the active-mode level gauge.
     pub fn storage_levels(&self) -> Result<(u64, u64)> {
         db_fault()?;

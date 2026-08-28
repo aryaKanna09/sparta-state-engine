@@ -14,8 +14,10 @@ pub async fn client_for(server: &MinioServer) -> Client {
 }
 
 pub async fn client_for_endpoint(endpoint: &str) -> Client {
-    let creds =
-        aws_sdk_s3::config::Credentials::new(ACCESS_KEY, SECRET_KEY, None, None, "sparta-testkit");
+    // Standard AWS env wins (compose/CI); testkit dev creds as fallback.
+    let ak = std::env::var("AWS_ACCESS_KEY_ID").unwrap_or_else(|_| ACCESS_KEY.to_string());
+    let sk = std::env::var("AWS_SECRET_ACCESS_KEY").unwrap_or_else(|_| SECRET_KEY.to_string());
+    let creds = aws_sdk_s3::config::Credentials::new(ak, sk, None, None, "sparta-testkit");
     let shared = aws_config::defaults(aws_config::BehaviorVersion::latest())
         .region(aws_config::Region::new("us-east-1"))
         .credentials_provider(creds)

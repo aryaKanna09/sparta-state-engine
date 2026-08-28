@@ -1,0 +1,84 @@
+# Sparta State Engine Helm values.
+#
+# The gateway runs INSIDE your environment; data never leaves your bucket.
+# Minimum viable install: set upstream.endpoint and credentials.secretName.
+
+image:
+  repository: your-registry/sparta-engine
+  tag: "0.1.0"
+  pullPolicy: IfNotPresent
+
+replicaCount: 1   # single-node metadata by design; keep at 1
+
+upstream:
+  # The customer's real S3 endpoint (e.g. https://s3.us-east-1.amazonaws.com
+  # or an interface VPC endpoint URL).
+  endpoint: ""
+  region: us-east-1
+  forcePathStyle: false
+
+credentials:
+  # Kubernetes Secret with keys: accessKey, secretKey. Clients sign against
+  # these and the gateway uses them upstream (credential passthrough).
+  secretName: sparta-credentials
+  # Optional separate upstream credentials (Secret keys: upstreamAccessKey,
+  # upstreamSecretKey). Leave false to reuse the client credentials.
+  separateUpstream: false
+
+mode: shadow            # start in shadow; flip to active after review
+bypass:
+  # Restart-free bypass: mount a ConfigMap at this path; creating the file
+  # flips the gateway to a dumb proxy per request (Invariant 0).
+  file: /bypass/enabled
+
+gc:
+  graceDays: 7
+  compactThreshold: "0.3"
+
+meter:
+  levelIntervalSeconds: 3600
+
+cache:
+  # NVMe-backed chunk cache. Use a local-nvme StorageClass in production.
+  enabled: true
+  storageClassName: ""
+  size: 50Gi
+  capacityBytes: "42949672960"   # 40 GiB, keep below the PVC size
+
+state:
+  # Metadata DB + meter log volume (small; the DB is a rebuildable cache).
+  storageClassName: ""
+  size: 5Gi
+
+ingest:
+  maxBytes: "2147483648"
+  batch: 64
+
+delta:
+  enabled: true
+  minhashThreshold: "0.7"
+
+tierRules: ""            # e.g. "snapshots/=30:GLACIER_IR"
+
+service:
+  type: ClusterIP
+  port: 8014
+
+resources:
+  requests:
+    cpu: "1"
+    memory: 2Gi
+  limits:
+    cpu: "4"
+    memory: 8Gi
+
+logLevel: info
+
+# --- Load balancer failover (Invariant 0.3) --------------------------------
+# Put the gateway behind an ALB/NLB with TWO target groups:
+#   1. primary  -> this Service, health check GET /readyz (port 8014)
+#   2. failover -> the raw S3 endpoint (IP targets of the interface VPC
+#      endpoint, or a forwarding rule to the regional endpoint)
+# /readyz returns 503 the moment the gateway cannot reach the upstream, so the
+# LB shifts traffic to the raw endpoint and client workloads keep running.
+# See docs/OPERATIONS.md "Bypass and failover" for the full pattern.

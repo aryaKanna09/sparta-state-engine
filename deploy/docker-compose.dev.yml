@@ -1,0 +1,100 @@
+# Local development stack: MinIO (the "customer bucket"), the Sparta gateway
+# in active mode, and a one-shot seeder that loads the simulated agent fleet.
+#
+#   docker compose -f deploy/docker-compose.dev.yml up --build
+#
+# Then point any S3 client at http://localhost:8014 with the dev credentials
+# below. MinIO's own console is at http://localhost:9001.
+
+services:
+  minio:
+    image: minio/minio:latest
+    command: server /data --address :9000 --console-address :9001
+    environment:
+      MINIO_ROOT_USER: sparta-dev
+      MINIO_ROOT_PASSWORD: sparta-dev-secret
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+
+  gateway:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      SPARTA_LISTEN: 0.0.0.0:8014
+      SPARTA_UPSTREAM_ENDPOINT: http://minio:9000
+      SPARTA_ACCESS_KEY: sparta-dev
+      SPARTA_SECRET_KEY: sparta-dev-secret
+      SPARTA_MODE: active
+      SPARTA_GC_GRACE_DAYS: "7"
+      RUST_LOG: info
+    ports:
+      - "8014:8014"
+    volumes:
+      - gateway-data:/data
+    healthcheck:
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/8014 && printf 'GET /healthz HTTP/1.0\\r\\n\\r\\n' >&3 && grep -q 200 <&3"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+
+  # One-shot: a RAW copy of the fleet straight into MinIO, for the Shadow A
+  # scanner demo ("what could you save").
+  seed-raw:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      AWS_ACCESS_KEY_ID: sparta-dev
+      AWS_SECRET_ACCESS_KEY: sparta-dev-secret
+    entrypoint: ["sparta-fixtures"]
+    command:
+      - "--endpoint"
+      - "http://minio:9000"
+      - "--bucket"
+      - "fleet-raw"
+      - "fleet"
+      - "--snapshots"
+      - "200"
+    restart: "no"
+
+  # One-shot: seed the simulated agent fleet THROUGH the gateway so the
+  # engine ingests it (write-through dedup).
+  seed-fixtures:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    depends_on:
+      gateway:
+        condition: service_healthy
+    environment:
+      AWS_ACCESS_KEY_ID: sparta-dev
+      AWS_SECRET_ACCESS_KEY: sparta-dev-secret
+    entrypoint: ["sparta-fixtures"]
+    command:
+      - "--endpoint"
+      - "http://gateway:8014"
+      - "--bucket"
+      - "fleet"
+      - "fleet"
+      - "--snapshots"
+      - "200"
+    restart: "no"
+
+volumes:
+  minio-data:
+  gateway-data:

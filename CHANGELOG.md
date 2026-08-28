@@ -155,3 +155,27 @@ newly written objects, with Invariant 0 intact end to end.
 - **Meter**: multi-process-safe appends (flock + tail resync, D-029) — GC,
   train-dict, and tier log into the same chain as the serving gateway; found
   by an integration test catching a real chain break.
+
+## M6 — Deployment and customer readiness (2026-08-28)
+
+- **Dockerfile**: two-stage build, slim runtime image carrying all four
+  binaries (gateway entrypoint), non-root user, `/data` volume for state.
+- **docker-compose.dev.yml**: MinIO + gateway (active) + raw-corpus seeder +
+  through-gateway seeder, health-gated, one command.
+- **Helm chart**: full values surface (upstream, secret-ref credentials, mode,
+  bypass ConfigMap file, GC/ingest/delta/tiering knobs, cache + state PVCs,
+  resources), probes on /healthz + /readyz, Recreate strategy (single-writer
+  metadata), ALB/NLB failover pattern documented.
+- **Terraform (AWS)**: ECS Fargate + internal NLB + minimal bucket-scoped IAM
+  into an existing VPC (D-032).
+- **Docs**: QUICKSTART (Docker + native paths, both exercising the full
+  scanner→activation journey), OPERATIONS (bypass/failover runbook, complete
+  env table, GC/rebuild/meter procedures, failure-mode table, monitoring),
+  SECURITY (placement, encryption inheritance, nothing-leaves-the-VPC,
+  integrity properties), SRF-SPEC (publishable measurement standard);
+  top-level README.
+- **Final acceptance**: `tools/quickstart-native.sh` runs clone→deployment→
+  SRF report end to end; measured 27 s warm on the dev machine, 188 s
+  for a from-scratch release build — a fresh machine lands around 4 minutes
+  total, far inside the 15-minute bar. Scanner-predicted SRF-S
+  and engine-delivered SRF agree at 6.92x on the fixture fleet.

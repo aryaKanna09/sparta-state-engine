@@ -1,0 +1,120 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "sparta-engine.fullname" . }}
+  labels: {{- include "sparta-engine.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  strategy:
+    type: Recreate   # single writer of the local metadata volume
+  selector:
+    matchLabels: {{- include "sparta-engine.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "sparta-engine.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: gateway
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args: ["serve"]
+          ports:
+            - containerPort: 8014
+              name: s3
+          env:
+            - name: SPARTA_LISTEN
+              value: "0.0.0.0:8014"
+            - name: SPARTA_UPSTREAM_ENDPOINT
+              value: {{ required "upstream.endpoint is required" .Values.upstream.endpoint | quote }}
+            - name: SPARTA_UPSTREAM_REGION
+              value: {{ .Values.upstream.region | quote }}
+            - name: SPARTA_FORCE_PATH_STYLE
+              value: {{ .Values.upstream.forcePathStyle | ternary "1" "0" | quote }}
+            - name: SPARTA_MODE
+              value: {{ .Values.mode | quote }}
+            - name: SPARTA_BYPASS_FILE
+              value: {{ .Values.bypass.file | quote }}
+            - name: SPARTA_GC_GRACE_DAYS
+              value: {{ .Values.gc.graceDays | quote }}
+            - name: SPARTA_GC_COMPACT_THRESHOLD
+              value: {{ .Values.gc.compactThreshold | quote }}
+            - name: SPARTA_METER_LEVEL_INTERVAL_S
+              value: {{ .Values.meter.levelIntervalSeconds | quote }}
+            - name: SPARTA_INGEST_MAX_BYTES
+              value: {{ .Values.ingest.maxBytes | quote }}
+            - name: SPARTA_INGEST_BATCH
+              value: {{ .Values.ingest.batch | quote }}
+            - name: SPARTA_DELTA
+              value: {{ .Values.delta.enabled | ternary "1" "0" | quote }}
+            - name: SPARTA_DELTA_MINHASH_THRESHOLD
+              value: {{ .Values.delta.minhashThreshold | quote }}
+            {{- if .Values.tierRules }}
+            - name: SPARTA_TIER_RULES
+              value: {{ .Values.tierRules | quote }}
+            {{- end }}
+            - name: SPARTA_DB_PATH
+              value: /state/sparta-gateway.sqlite
+            - name: SPARTA_METER_PATH
+              value: /state/sparta-meter.jsonl
+            {{- if .Values.cache.enabled }}
+            - name: SPARTA_CACHE_DIR
+              value: /cache
+            - name: SPARTA_CACHE_BYTES
+              value: {{ .Values.cache.capacityBytes | quote }}
+            {{- end }}
+            - name: RUST_LOG
+              value: {{ .Values.logLevel | quote }}
+            - name: SPARTA_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.credentials.secretName }}
+                  key: accessKey
+            - name: SPARTA_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.credentials.secretName }}
+                  key: secretKey
+            {{- if .Values.credentials.separateUpstream }}
+            - name: SPARTA_UPSTREAM_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.credentials.secretName }}
+                  key: upstreamAccessKey
+            - name: SPARTA_UPSTREAM_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.credentials.secretName }}
+                  key: upstreamSecretKey
+            {{- end }}
+          livenessProbe:
+            httpGet: { path: /healthz, port: 8014 }
+            periodSeconds: 5
+          readinessProbe:
+            httpGet: { path: /readyz, port: 8014 }
+            periodSeconds: 3
+            failureThreshold: 2
+          resources: {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: state
+              mountPath: /state
+            {{- if .Values.cache.enabled }}
+            - name: cache
+              mountPath: /cache
+            {{- end }}
+            - name: bypass
+              mountPath: {{ dir .Values.bypass.file }}
+      volumes:
+        - name: state
+          persistentVolumeClaim:
+            claimName: {{ include "sparta-engine.fullname" . }}-state
+        {{- if .Values.cache.enabled }}
+        - name: cache
+          persistentVolumeClaim:
+            claimName: {{ include "sparta-engine.fullname" . }}-cache
+        {{- end }}
+        # Touch the key in this ConfigMap to flip the gateway into dumb-proxy
+        # mode with no restart (see docs/OPERATIONS.md).
+        - name: bypass
+          configMap:
+            name: {{ include "sparta-engine.fullname" . }}-bypass
+            optional: true

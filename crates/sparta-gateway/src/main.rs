@@ -174,9 +174,19 @@ fn stats() -> Result<()> {
     let cfg = GatewayConfig::from_env()?;
     let db = Db::open(Path::new(&cfg.db_path))?;
     let snap = db.snapshot()?;
+    let (logical_stored, physical_stored) = db.storage_levels().unwrap_or((0, 0));
+    let ingest_queue = db.ingest_queue_len().unwrap_or(0);
     println!(
         "{}",
         serde_json::to_string_pretty(&serde_json::json!({
+            "active": {
+                "logical_stored_bytes": logical_stored,
+                "physical_stored_bytes": physical_stored,
+                "srf": if physical_stored > 0 {
+                    logical_stored as f64 / physical_stored as f64
+                } else { 0.0 },
+                "ingest_queue": ingest_queue,
+            },
             "ops": snap.ops.iter().cloned().collect::<std::collections::BTreeMap<String, u64>>(),
             "bytes_in": snap.bytes_in,
             "bytes_out": snap.bytes_out,

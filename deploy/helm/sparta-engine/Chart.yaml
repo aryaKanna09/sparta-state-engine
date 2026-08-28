@@ -1,0 +1,6 @@
+apiVersion: v2
+name: sparta-engine
+description: Sparta State Engine - S3-compatible deduplicating storage gateway
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
