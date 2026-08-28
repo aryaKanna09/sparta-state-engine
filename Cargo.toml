@@ -31,6 +31,8 @@ anyhow = "1"
 hex = "0.4"
 bytes = "1"
 rusqlite = { version = "0.32", features = ["bundled"] }
+aws-config = { version = "1", features = ["behavior-version-latest"] }
+aws-sdk-s3 = { version = "1", features = ["behavior-version-latest"] }
 clap = { version = "4", features = ["derive", "env"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }

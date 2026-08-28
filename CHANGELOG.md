@@ -29,3 +29,27 @@
 
 Workspace scaffolding, CI (fmt/clippy/test + MinIO integration lane), SPEC.md,
 DECISIONS.md D-001..D-008.
+
+## M1 — Scanner / Shadow A (2026-08-27)
+
+`sparta-scanner`: standalone read-only redundancy scanner.
+
+- Enumeration via S3 Inventory (CSV manifest, local or s3://, gzip data files)
+  with ListObjectsV2 fallback; multi-bucket.
+- Seeded uniform sampling under a global byte budget with a per-object fetch
+  cap (large objects fingerprinted on a prefix window, opaque).
+- Fingerprinting with the full spec pipeline (normalization + FastCDC +
+  BLAKE3), cross-object stored-size cache, concurrent fetch + spawn_blocking
+  CPU work.
+- SRF-S point estimate with exact leave-one-out jackknife 95% CI (D-009);
+  with/without-normalization comparison with a >3x reverification flag;
+  addressable SRF via prefix-glob and tag exclusion rules; breakdowns by
+  prefix and content type; MinHash LSH redundancy clusters.
+- Reports: JSON + self-contained single-file HTML (no scripts, no external
+  assets).
+- Testkit: MinIO server harness (native binary, D-002), deterministic fleet
+  fixture generator with localized-hotspot mutation (D-010), bucket seeding
+  helpers, `sparta-fixtures` CLI.
+- Acceptance: end-to-end MinIO integration test (SRF, CI bracketing,
+  normalization, exclusions, clusters, HTML). Scale run: 100,000-object /
+  6.25 GiB bucket scanned at 1% sampling in 28.5 s wall clock (target: <1 h).

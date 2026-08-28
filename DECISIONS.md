@@ -67,3 +67,31 @@ parallel. Dictionary compression (M5) recovers most of the lost ratio.
 ## D-008: Edition 2021
 Workspace pins edition 2021 (not 2024) for maximum compatibility with the mandated crate
 set on stable; nothing in the codebase needs 2024 features.
+
+## D-009: Jackknife CI instead of bootstrap for SRF-S
+The naive bootstrap is structurally biased for dedup ratios: resampling with
+replacement duplicates objects, and a duplicated object dedups perfectly
+against itself, inflating every resampled ratio above the point estimate (first
+implementation produced CIs that did not contain their own point estimate).
+Replaced with an exact leave-one-out jackknife (95% = point ± 1.96·SE), which
+is centered by construction and computable in O(total chunks) using global
+chunk occurrence counts. `ci_method` is recorded in the report JSON.
+
+## D-010: Localized (hotspot) mutation model in the fleet fixture
+Scattering the mutation budget uniformly across a snapshot dirties virtually
+every 1 MiB-average chunk and models nothing real; sandbox writes cluster in a
+few files. The fixture spends the budget in ~256 KiB contiguous hotspots plus
+an appended log tail. Sibling snapshots therefore share family/template chunks
+(the redundancy the engine actually recovers) rather than pairwise-identical
+noise.
+
+## D-011: Scanner sampling policy
+Uniform seeded object sampling (partial Fisher–Yates, `--seed`, default 42),
+byte budget reserved before each fetch (unbiased truncation because sample
+order is random), and a per-object fetch cap: objects above `--max-object-bytes`
+are fingerprinted on a prefix window and skip normalization (a partial
+compressed stream cannot be verified). SRF-S is reported as measured within
+the sample and documented as a conservative lower bound on fleet SRF; tag
+exclusion rules are evaluated on sampled objects only (GetObjectTagging per
+object). S3 Inventory support is CSV format (the S3 default); ORC/Parquet
+inventories are out of MVP scope.
