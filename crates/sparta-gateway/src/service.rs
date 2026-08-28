@@ -17,6 +17,9 @@ use futures::FutureExt;
 use s3s::{S3Request, S3Response, S3Result, S3};
 use tracing::{error, warn};
 
+use sparta_meter::log::MeterWriter;
+use sparta_meter::record::{Mode, RecordBody};
+
 use crate::config::{bypass_requested, GatewayConfig};
 use crate::db::Db;
 use crate::shadow;
@@ -24,7 +27,15 @@ use crate::shadow;
 pub struct SpartaS3 {
     pub inner: s3s_aws::Proxy,
     pub db: Arc<Db>,
+    pub meter: Arc<MeterWriter>,
     pub cfg: Arc<GatewayConfig>,
+}
+
+fn now_ms() -> u64 {
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_millis() as u64)
+        .unwrap_or(0)
 }
 
 impl SpartaS3 {
@@ -39,6 +50,31 @@ impl SpartaS3 {
     fn guarded<F: FnOnce()>(&self, what: &'static str, f: F) {
         if std::panic::catch_unwind(AssertUnwindSafe(f)).is_err() {
             error!(what, "internal logic panicked; continuing as passthrough");
+        }
+    }
+
+    /// Meter a non-streaming client operation (request counts by type live in
+    /// the same tamper-evident log as byte metering). Never fails a request.
+    fn meter_op(&self, op: &'static str, bucket: &str) {
+        if bypass_requested() {
+            return;
+        }
+        let result = self.meter.append(
+            now_ms(),
+            Mode::Shadow,
+            RecordBody::Op {
+                op: op.to_string(),
+                bucket: bucket.to_string(),
+                logical_bytes: 0,
+                physical_bytes: 0,
+                engine_put_requests: 0,
+                engine_get_requests: 0,
+                engine_bytes: 0,
+                engine_cpu_us: 0,
+            },
+        );
+        if let Err(e) = result {
+            warn!(op, error = %e, "meter append failed");
         }
     }
 }
@@ -66,9 +102,19 @@ impl S3 for SpartaS3 {
         self.note("op_put_object");
         if !bypass_requested() && self.cfg.shadow_chunking {
             let db = Arc::clone(&self.db);
+            let meter = Arc::clone(&self.meter);
             self.guarded("put shadow tap", || {
+                let bucket = req.input.bucket.clone();
                 if let Some(body) = req.input.body.take() {
-                    req.input.body = Some(shadow::tap_blob(body, db, "bytes_in", true));
+                    req.input.body = Some(shadow::tap_blob(
+                        body,
+                        db,
+                        meter,
+                        "put_object",
+                        bucket,
+                        "bytes_in",
+                        true,
+                    ));
                 }
             });
         }
@@ -82,9 +128,19 @@ impl S3 for SpartaS3 {
         self.note("op_upload_part");
         if !bypass_requested() && self.cfg.shadow_chunking {
             let db = Arc::clone(&self.db);
+            let meter = Arc::clone(&self.meter);
             self.guarded("upload-part shadow tap", || {
+                let bucket = req.input.bucket.clone();
                 if let Some(body) = req.input.body.take() {
-                    req.input.body = Some(shadow::tap_blob(body, db, "bytes_in", true));
+                    req.input.body = Some(shadow::tap_blob(
+                        body,
+                        db,
+                        meter,
+                        "upload_part",
+                        bucket,
+                        "bytes_in",
+                        true,
+                    ));
                 }
             });
         }
@@ -96,12 +152,22 @@ impl S3 for SpartaS3 {
         req: S3Request<s3s::dto::GetObjectInput>,
     ) -> S3Result<S3Response<s3s::dto::GetObjectOutput>> {
         self.note("op_get_object");
+        let bucket = req.input.bucket.clone();
         let mut resp = proxied(self.inner.get_object(req)).await?;
         if !bypass_requested() {
             let db = Arc::clone(&self.db);
+            let meter = Arc::clone(&self.meter);
             self.guarded("get shadow tap", || {
                 if let Some(body) = resp.output.body.take() {
-                    resp.output.body = Some(shadow::tap_blob(body, db, "bytes_out", false));
+                    resp.output.body = Some(shadow::tap_blob(
+                        body,
+                        db,
+                        meter,
+                        "get_object",
+                        bucket,
+                        "bytes_out",
+                        false,
+                    ));
                 }
             });
         }
@@ -115,6 +181,7 @@ impl S3 for SpartaS3 {
         req: S3Request<s3s::dto::HeadObjectInput>,
     ) -> S3Result<S3Response<s3s::dto::HeadObjectOutput>> {
         self.note("op_head_object");
+        self.meter_op("head_object", &req.input.bucket);
         proxied(self.inner.head_object(req)).await
     }
 
@@ -123,6 +190,7 @@ impl S3 for SpartaS3 {
         req: S3Request<s3s::dto::DeleteObjectInput>,
     ) -> S3Result<S3Response<s3s::dto::DeleteObjectOutput>> {
         self.note("op_delete_object");
+        self.meter_op("delete_object", &req.input.bucket);
         proxied(self.inner.delete_object(req)).await
     }
 
@@ -131,6 +199,7 @@ impl S3 for SpartaS3 {
         req: S3Request<s3s::dto::CreateMultipartUploadInput>,
     ) -> S3Result<S3Response<s3s::dto::CreateMultipartUploadOutput>> {
         self.note("op_create_multipart_upload");
+        self.meter_op("create_multipart_upload", &req.input.bucket);
         proxied(self.inner.create_multipart_upload(req)).await
     }
 
@@ -139,6 +208,7 @@ impl S3 for SpartaS3 {
         req: S3Request<s3s::dto::CompleteMultipartUploadInput>,
     ) -> S3Result<S3Response<s3s::dto::CompleteMultipartUploadOutput>> {
         self.note("op_complete_multipart_upload");
+        self.meter_op("complete_multipart_upload", &req.input.bucket);
         proxied(self.inner.complete_multipart_upload(req)).await
     }
 
@@ -147,6 +217,7 @@ impl S3 for SpartaS3 {
         req: S3Request<s3s::dto::AbortMultipartUploadInput>,
     ) -> S3Result<S3Response<s3s::dto::AbortMultipartUploadOutput>> {
         self.note("op_abort_multipart_upload");
+        self.meter_op("abort_multipart_upload", &req.input.bucket);
         proxied(self.inner.abort_multipart_upload(req)).await
     }
 
@@ -155,6 +226,7 @@ impl S3 for SpartaS3 {
         req: S3Request<s3s::dto::ListObjectsV2Input>,
     ) -> S3Result<S3Response<s3s::dto::ListObjectsV2Output>> {
         self.note("op_list_objects_v2");
+        self.meter_op("list_objects_v2", &req.input.bucket);
         proxied(self.inner.list_objects_v2(req)).await
     }
 
@@ -163,6 +235,7 @@ impl S3 for SpartaS3 {
         req: S3Request<s3s::dto::CopyObjectInput>,
     ) -> S3Result<S3Response<s3s::dto::CopyObjectOutput>> {
         self.note("op_copy_object");
+        self.meter_op("copy_object", &req.input.bucket);
         proxied(self.inner.copy_object(req)).await
     }
 

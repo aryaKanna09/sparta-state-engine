@@ -7,12 +7,20 @@ license.workspace = true
 authors.workspace = true
 
 [dependencies]
-sparta-core = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
 blake3 = { workspace = true }
 hex = { workspace = true }
+csv = { workspace = true }
+flate2 = { workspace = true }
+clap = { workspace = true }
+anyhow = { workspace = true }
+parquet = { version = "59", default-features = false, features = ["flate2", "flate2-rust_backend", "snap"] }
 
 [dev-dependencies]
 tempfile = { workspace = true }
+
+[[bin]]
+name = "sparta-meter"
+path = "src/bin/main.rs"

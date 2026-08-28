@@ -52,12 +52,14 @@ struct Gateway {
     pub endpoint: String,
     _tmp: tempfile::TempDir,
     pub db_path: PathBuf,
+    pub meter_path: PathBuf,
 }
 
 impl Gateway {
     fn spawn(upstream: &str, extra_env: &[(&str, &str)]) -> Self {
         let tmp = tempfile::tempdir().unwrap();
         let db_path = tmp.path().join("gw.sqlite");
+        let meter_path = tmp.path().join("meter.jsonl");
         let port = free_port();
         let mut cmd = Command::new(gateway_bin());
         cmd.arg("serve")
@@ -66,6 +68,8 @@ impl Gateway {
             .env("SPARTA_ACCESS_KEY", minio::ACCESS_KEY)
             .env("SPARTA_SECRET_KEY", minio::SECRET_KEY)
             .env("SPARTA_DB_PATH", &db_path)
+            .env("SPARTA_METER_PATH", &meter_path)
+            .env("SPARTA_METER_LEVEL_INTERVAL_S", "1")
             .env("RUST_LOG", "warn")
             .stdout(Stdio::null())
             .stderr(Stdio::inherit());
@@ -79,6 +83,7 @@ impl Gateway {
             endpoint: format!("http://127.0.0.1:{port}"),
             _tmp: tmp,
             db_path,
+            meter_path,
         };
         gw.wait_healthy();
         gw
@@ -212,6 +217,26 @@ fn boto3_workflow_through_gateway() {
     assert!(
         stats["ops"]["op_put_object"].as_u64().unwrap_or(0) > 0
             || stats["ops"]["op_upload_part"].as_u64().unwrap_or(0) > 0
+    );
+
+    // The meter log must verify (tamper-evident chain) and cover the bytes.
+    std::thread::sleep(Duration::from_millis(1500)); // allow a level record
+    let verify = Command::new(
+        env!("CARGO_BIN_EXE_sparta-gateway").replace("sparta-gateway", "sparta-meter"),
+    )
+    .args(["--log", gw.meter_path.to_str().unwrap(), "verify"])
+    .output()
+    .expect("run sparta-meter verify");
+    assert!(
+        verify.status.success(),
+        "meter chain verify failed: {}",
+        String::from_utf8_lossy(&verify.stderr)
+    );
+    let text = std::fs::read_to_string(&gw.meter_path).unwrap();
+    assert!(text.contains("\"op\":\"put_object\"") || text.contains("\"op\":\"upload_part\""));
+    assert!(
+        text.contains("\"kind\":\"level\""),
+        "projection level records missing"
     );
 }
 

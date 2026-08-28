@@ -142,3 +142,35 @@ literal code (script in the commit history); every S3 operation the `s3s-aws`
 proxy supports — including ones the engine will never optimize — delegates to
 the upstream with op counting and a panic net, satisfying "unsupported
 operations must transparently proxy".
+
+## D-018: Meter log granularity and placement
+One meter record per client data operation (put/get/upload_part plus the
+zero-byte data ops for request counts by type), single JSONL file, flushed per
+append, fsynced on the level interval. Bucket-configuration operations are
+counted in the local stats DB but not metered — they are not billable data
+path. Segment rotation and `_sparta/meter/` mirroring land with the M4 bucket
+write path (the meter API already exposes the chain tip for sealing).
+Alternative: time-aggregated records — rejected for MVP; per-op records make
+the invoice auditable line by line and volumes are modest at fleet scale.
+
+## D-019: Storage savings need a time integral, not byte counters
+Storage cost is $/GiB-month, so the report integrates Level gauge records
+(step-hold) across the window instead of summing bytes written. Shadow mode
+emits hourly projected levels (logical = bytes written through, physical =
+dedup-only unique bound from the shadow chunk set) labeled `projected: true`;
+reports and invoices that include projections say so explicitly. Active mode
+(M4) emits metered actuals from manifest/pack accounting.
+
+## D-020: VSRR definition
+VSRR = net savings over the trailing 30 days, annualized (x12.1667). NET =
+gross tiered-storage savings − engine upstream request costs (PUT/GET classes
+priced separately) − engine compute (measured CPU time priced per vCPU-hour).
+The chain-verified log is the only input; `sparta-meter verify` + `report`
+reproduce every number.
+
+## D-021: CUR loader scope
+The CUR loader derives effective rates from stable lineItem columns only
+(ProductCode/UsageType/UsageAmount/UnblendedCost), covering TimedStorage,
+Requests-Tier1/Tier2, and DataTransfer-Out. Anything absent keeps the built-in
+list price. Full CUR schema fidelity (RI/SP amortization, tiered rediscovery)
+is out of MVP scope and noted in the rate card's `source` field.

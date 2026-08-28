@@ -19,9 +19,18 @@ use s3s::StdError;
 use tracing::warn;
 
 use sparta_core::hash::ChunkHash;
+use sparta_meter::log::MeterWriter;
+use sparta_meter::record::{Mode, RecordBody};
 
 use crate::chunkstream::IncrementalChunker;
 use crate::db::Db;
+
+fn now_ms() -> u64 {
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_millis() as u64)
+        .unwrap_or(0)
+}
 
 /// Observation state fed as bytes stream through.
 struct TapState {
@@ -29,11 +38,15 @@ struct TapState {
     observed: Vec<(ChunkHash, u64, u64)>,
     bytes: u64,
     db: Arc<Db>,
+    meter: Arc<MeterWriter>,
+    op: &'static str,
+    bucket: String,
     /// Counter names to bump with `bytes` at end of stream.
     byte_counter: &'static str,
     record_chunks: bool,
     disarmed: bool,
     panic_fault: bool,
+    cpu_ns: u64,
 }
 
 impl TapState {
@@ -45,17 +58,21 @@ impl TapState {
         }
         self.bytes += data.len() as u64;
         if let Some(chunker) = &mut self.chunker {
+            let t0 = std::time::Instant::now();
             for c in chunker.feed(data) {
                 self.observed.push((c.hash, c.raw_len, 0));
             }
+            self.cpu_ns += t0.elapsed().as_nanos() as u64;
         }
     }
 
     fn finish(&mut self) {
         if let Some(mut chunker) = self.chunker.take() {
+            let t0 = std::time::Instant::now();
             for c in chunker.finish() {
                 self.observed.push((c.hash, c.raw_len, 0));
             }
+            self.cpu_ns += t0.elapsed().as_nanos() as u64;
         }
         // Stored-size estimates: shadow mode has already forwarded the bytes,
         // so we only know chunk hashes and lengths here. Estimate stored size
@@ -70,6 +87,23 @@ impl TapState {
             if let Err(e) = self.db.record_shadow_stream(self.bytes, &self.observed) {
                 warn!(error = %e, "shadow stream record failed (stats only, request unaffected)");
             }
+        }
+        // Meter record: shadow mode is pure passthrough, physical == logical.
+        if let Err(e) = self.meter.append(
+            now_ms(),
+            Mode::Shadow,
+            RecordBody::Op {
+                op: self.op.to_string(),
+                bucket: std::mem::take(&mut self.bucket),
+                logical_bytes: self.bytes,
+                physical_bytes: self.bytes,
+                engine_put_requests: 0,
+                engine_get_requests: 0,
+                engine_bytes: 0,
+                engine_cpu_us: self.cpu_ns / 1000,
+            },
+        ) {
+            warn!(error = %e, "meter append failed (metering only, request unaffected)");
         }
         self.observed.clear();
     }
@@ -141,9 +175,13 @@ impl Drop for TapStream {
 ///
 /// `chunk` enables CDC fingerprinting (PUT/UploadPart); plain byte counting
 /// otherwise (GET responses).
+#[allow(clippy::too_many_arguments)]
 pub fn tap_blob(
     blob: StreamingBlob,
     db: Arc<Db>,
+    meter: Arc<MeterWriter>,
+    op: &'static str,
+    bucket: String,
     byte_counter: &'static str,
     chunk: bool,
 ) -> StreamingBlob {
@@ -154,10 +192,14 @@ pub fn tap_blob(
             observed: Vec::new(),
             bytes: 0,
             db,
+            meter,
+            op,
+            bucket,
             byte_counter,
             record_chunks: chunk,
             disarmed: false,
             panic_fault: std::env::var("SPARTA_FAULT_PANIC_TAP").is_ok_and(|v| v == "1"),
+            cpu_ns: 0,
         },
         finished: false,
     };

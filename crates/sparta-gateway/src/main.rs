@@ -85,6 +85,46 @@ fn stats() -> Result<()> {
     Ok(())
 }
 
+/// Periodic shadow-mode storage projection into the meter log: logical =
+/// bytes written through the engine, physical = the dedup-only unique-stored
+/// bound. Labeled `projected`; active mode (M4) emits metered actuals.
+fn spawn_level_projection(
+    db: Arc<Db>,
+    meter: Arc<sparta_meter::log::MeterWriter>,
+    interval_s: u64,
+) {
+    tokio::spawn(async move {
+        loop {
+            tokio::time::sleep(std::time::Duration::from_secs(interval_s.max(1))).await;
+            let now_ms = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map(|d| d.as_millis() as u64)
+                .unwrap_or(0);
+            match db.snapshot() {
+                Ok(snap) => {
+                    if snap.shadow_logical_bytes == 0 {
+                        continue;
+                    }
+                    let result = meter.append(
+                        now_ms,
+                        sparta_meter::record::Mode::Shadow,
+                        sparta_meter::record::RecordBody::Level {
+                            logical_stored_bytes: snap.shadow_logical_bytes,
+                            physical_stored_bytes: snap.shadow_unique_stored_bytes,
+                            projected: true,
+                        },
+                    );
+                    if let Err(e) = result {
+                        warn!(error = %e, "level projection append failed");
+                    }
+                    let _ = meter.sync();
+                }
+                Err(e) => warn!(error = %e, "level projection snapshot failed"),
+            }
+        }
+    });
+}
+
 async fn serve() -> Result<()> {
     let cfg = Arc::new(GatewayConfig::from_env()?);
     if cfg.active_mode {
@@ -98,6 +138,15 @@ async fn serve() -> Result<()> {
     );
 
     let db = Arc::new(Db::open(Path::new(&cfg.db_path))?);
+    let meter = Arc::new(
+        sparta_meter::log::MeterWriter::open(Path::new(&cfg.meter_path))
+            .with_context(|| format!("open meter log {}", cfg.meter_path))?,
+    );
+    spawn_level_projection(
+        Arc::clone(&db),
+        Arc::clone(&meter),
+        cfg.meter_level_interval_s,
+    );
 
     // Upstream client (the customer's real endpoint).
     let mut loader = aws_config::defaults(aws_config::BehaviorVersion::latest())
@@ -135,6 +184,7 @@ async fn serve() -> Result<()> {
     let sparta = service::SpartaS3 {
         inner: proxy,
         db: Arc::clone(&db),
+        meter,
         cfg: Arc::clone(&cfg),
     };
 

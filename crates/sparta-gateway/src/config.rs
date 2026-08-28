@@ -31,6 +31,8 @@ pub struct GatewayConfig {
     pub upstream_secret_key: Option<String>,
     pub active_mode: bool,
     pub db_path: String,
+    pub meter_path: String,
+    pub meter_level_interval_s: u64,
     pub force_path_style: bool,
     pub shadow_chunking: bool,
     /// Per-attempt timeout for upstream calls, ms (0 = SDK default).
@@ -104,6 +106,12 @@ impl GatewayConfig {
             active_mode,
             db_path: std::env::var("SPARTA_DB_PATH")
                 .unwrap_or_else(|_| "sparta-gateway.sqlite".into()),
+            meter_path: std::env::var("SPARTA_METER_PATH")
+                .unwrap_or_else(|_| "sparta-meter.jsonl".into()),
+            meter_level_interval_s: std::env::var("SPARTA_METER_LEVEL_INTERVAL_S")
+                .ok()
+                .and_then(|v| v.parse().ok())
+                .unwrap_or(3600),
             force_path_style: env_flag("SPARTA_FORCE_PATH_STYLE", true),
             shadow_chunking: env_flag("SPARTA_SHADOW_CHUNKING", true),
             upstream_attempt_timeout_ms: std::env::var("SPARTA_UPSTREAM_ATTEMPT_TIMEOUT_MS")

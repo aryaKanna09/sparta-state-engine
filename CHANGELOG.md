@@ -77,3 +77,23 @@ DECISIONS.md D-001..D-008.
   GET, multipart copy, delete, SHA-256 verified) clean and with all fault
   classes active at once; aws CLI workflow; per-fault matrix; bypass-file
   toggling; readyz failover; passthrough overhead sanity check.
+
+## M3 — Meter (2026-08-27)
+
+`sparta-meter`: the tamper-evident metering log, pricing, and reporting.
+
+- Append-only JSONL log; every record BLAKE3-chained over its predecessor;
+  `sparta-meter verify` revalidates the chain and pinpoints the first bad
+  record. Unit tests prove edit/deletion detection and truncation semantics.
+- Record kinds: per-operation logical/physical bytes + engine request/byte/CPU
+  overheads, storage Level gauges (with `projected` labeling), GC sweeps,
+  operational notes (D-018/D-019).
+- Pricing: built-in AWS S3 Standard tiered rate card; CUR loader deriving the
+  customer's effective storage/request/egress rates (D-021).
+- Reports: NET savings (gross tiered-storage savings minus engine request and
+  compute costs), VSRR trailing-30-day annualized (D-020); monthly invoice
+  draft derived only from the log; CSV and Parquet exports (round-trip tested).
+- Gateway wiring: shadow taps append Op records (measured chunking CPU) and an
+  hourly projected Level gauge to the same log active mode will use; meter
+  failures can never fail a request. Integration test runs the boto3 workflow
+  then `sparta-meter verify` against the produced log.
