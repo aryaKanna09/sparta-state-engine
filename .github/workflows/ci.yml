@@ -48,6 +48,11 @@ jobs:
           chmod +x /usr/local/bin/minio
       - name: install client tooling (boto3, aws CLI)
         run: pip3 install --quiet boto3 awscli
+      # Tests shell out to workspace binaries (sparta-meter verify); cargo
+      # test only uplifts bins for packages with their own integration tests,
+      # so build every bin explicitly first.
+      - name: build workspace binaries
+        run: cargo build --workspace --bins
       - name: integration tests (MinIO-backed, incl. fault injection suite)
         run: cargo test --workspace -- --ignored --test-threads=2
         env:
