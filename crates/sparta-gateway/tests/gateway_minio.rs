@@ -17,6 +17,26 @@ fn gateway_bin() -> &'static str {
     env!("CARGO_BIN_EXE_sparta-gateway")
 }
 
+fn meter_bin() -> PathBuf {
+    // `cargo test` only uplifts a package's normal binary when that package
+    // has an integration-test target of its own; sparta-meter has none, so on
+    // a fresh checkout target/<profile>/sparta-meter does not exist when this
+    // test runs. Build it on demand instead of relying on a stale artifact.
+    let path = PathBuf::from(
+        env!("CARGO_BIN_EXE_sparta-gateway").replace("sparta-gateway", "sparta-meter"),
+    );
+    if !path.is_file() {
+        let mut cmd = Command::new(env!("CARGO"));
+        cmd.args(["build", "-p", "sparta-meter", "--bins"]);
+        if path.parent().is_some_and(|p| p.ends_with("release")) {
+            cmd.arg("--release");
+        }
+        let status = cmd.status().expect("spawn cargo build -p sparta-meter");
+        assert!(status.success(), "cargo build -p sparta-meter failed");
+    }
+    path
+}
+
 fn workspace_root() -> PathBuf {
     let mut d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     d.pop();
@@ -221,12 +241,10 @@ fn boto3_workflow_through_gateway() {
 
     // The meter log must verify (tamper-evident chain) and cover the bytes.
     std::thread::sleep(Duration::from_millis(1500)); // allow a level record
-    let verify = Command::new(
-        env!("CARGO_BIN_EXE_sparta-gateway").replace("sparta-gateway", "sparta-meter"),
-    )
-    .args(["--log", gw.meter_path.to_str().unwrap(), "verify"])
-    .output()
-    .expect("run sparta-meter verify");
+    let verify = Command::new(meter_bin())
+        .args(["--log", gw.meter_path.to_str().unwrap(), "verify"])
+        .output()
+        .expect("run sparta-meter verify");
     assert!(
         verify.status.success(),
         "meter chain verify failed: {}",
