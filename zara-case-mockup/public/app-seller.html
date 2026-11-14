@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ZARA — Seller (iOS)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400&display=swap">
+<link rel="stylesheet" href="assets/ios.css">
+<link rel="icon" href="assets/favicon.svg">
+</head>
+<body>
+<div class="stage">
+  <div class="stage__t">
+    <h1>ZARA — Seller</h1>
+    <p>The prompt is a price, not a demand claim: sell this for up to $82. Photograph it, accept the grade, choose how
+       it travels once — then you only hear from us when it sells.</p>
+  </div>
+
+  <div class="iphone"><div class="iphone__screen">
+
+    <!-- ============================================== LOCK (opportunity) -->
+    <section class="view is-on" id="v-lock">
+      <div class="sbar sbar--light"><span>9:41</span><span class="sbar__r"><span class="sbar__sig"><i></i><i></i><i></i><i></i></span><span class="sbar__bat"></span></span></div>
+      <div class="lock">
+        <div class="lock__c"><b>9:41</b><span>Friday, 14 November</span></div>
+        <button class="push" data-go="offer-intro">
+          <span class="push__i"><span class="wordmark">Z</span></span>
+          <span><span class="push__t">ZARA</span>
+            <span class="push__b">Your <b>textured tweed blazer</b> could sell for up to <b>$82</b> right now.
+              Three photographs is all it takes.</span></span>
+          <span class="push__x">now</span>
+        </button>
+        <p class="lock__hint">Tap the notification</p>
+      </div>
+      <div class="hind hind--light"></div>
+    </section>
+
+    <!-- ======================================================= WHAT IT'S WORTH -->
+    <section class="view" id="v-offer-intro">
+      <div class="sbar"><span>9:41</span><span class="sbar__r"><span class="sbar__sig"><i></i><i></i><i></i><i></i></span><span class="sbar__bat"></span></span></div>
+      <div class="nav"><button class="nav__b" data-back>&#8249;</button><span class="nav__t">SELL THIS ITEM</span><span class="nav__r"></span></div>
+      <div class="scroll">
+        <div class="row" style="border:0;padding-top:4px">
+          <div class="row__m"><img src="assets/img/blazer.webp" alt=""></div>
+          <div><div class="row__t">TEXTURED TWEED BLAZER</div>
+            <div class="row__s">Bought 14 March 2026 · Size M<br>You paid $109.00</div></div>
+          <div class="row__a"></div>
+        </div>
+
+        <p class="u-eye" style="margin:18px 0 8px">WHAT IT COULD SELL FOR</p>
+        <div class="checks">
+          <div class="check"><span class="check__k"><span class="dot dot--e"></span>Excellent</span><span class="check__v" style="color:#000;font-size:var(--f12)">$82</span></div>
+          <div class="check"><span class="check__k"><span class="dot dot--g"></span>Good</span><span class="check__v" style="color:#000;font-size:var(--f12)">$63</span></div>
+          <div class="check"><span class="check__k"><span class="dot dot--f"></span>Fair</span><span class="check__v" style="color:#000;font-size:var(--f12)">$46</span></div>
+        </div>
+        <p class="u-met" style="margin-top:10px">Based on what this exact product code has resold for over the last 90
+          days, with $109.00 original retail as the ceiling. Photographs decide which band you land in.</p>
+
+        <div style="background:#f4f3f1;padding:13px;margin-top:16px">
+          <p class="u-eye">YOU KEEP ALL OF IT</p>
+          <p class="u-met" style="margin:5px 0 0">Participation in Zara Resell is free of charge for the seller. The
+            buyer pays the $1.00 + 5% transaction fee.</p>
+        </div>
+      </div>
+      <div class="actionbar">
+        <button class="btn btn--pri" data-act="camera">PHOTOGRAPH IT</button>
+        <button class="btn btn--quiet btn--sm" data-act="sample">USE THE SAMPLE GARMENT</button>
+      </div>
+      <div class="hind"></div>
+    </section>
+
+    <!-- ============================================================ CAPTURE -->
+    <section class="view" id="v-capture">
+      <div class="sbar sbar--light"><span>9:41</span><span class="sbar__r"><span class="sbar__sig"><i></i><i></i><i></i><i></i></span><span class="sbar__bat"></span></span></div>
+      <div class="cam">
+        <video id="cam" playsinline muted autoplay></video>
+        <img id="still" alt="" style="display:none">
+        <div class="cam__f"></div>
+        <div class="cam__dots" id="cdots"><i class="on"></i><i></i><i></i><i></i></div>
+        <div class="chips">
+          <span class="chip" id="chip-light">LIGHT</span>
+          <span class="chip" id="chip-sharp">SHARP</span>
+          <span class="chip" id="chip-frame">FRAME</span>
+        </div>
+        <div class="coach">
+          <b id="clabel">FRONT, FLAT, DAYLIGHT</b>
+          <p id="ccoach">Lay the blazer flat near a window.</p>
+          <p class="read" id="readout"></p>
+        </div>
+        <div class="thumbs" id="thumbs"></div>
+        <button class="shutter" id="shutter" data-act="shoot" aria-label="Take photograph"></button>
+      </div>
+      <div class="hind hind--light"></div>
+    </section>
+
+    <!-- ============================================================ GRADING -->
+    <section class="view" id="v-grading">
+      <div class="sbar"><span>9:41</span><span class="sbar__r"><span class="sbar__sig"><i></i><i></i><i></i><i></i></span><span class="sbar__bat"></span></span></div>
+      <div class="nav"><span></span><span class="nav__t">GRADING</span><span></span></div>
+      <div class="center">
+        <div class="spin"></div>
+        <p class="u-lab" style="margin-top:18px">READING YOUR PHOTOGRAPHS</p>
+        <ul class="ticks" id="ticks">
+          <li>Pilling &amp; surface</li><li>Seams &amp; structure</li>
+          <li>Staining &amp; marks</li><li>Hardware &amp; fastenings</li>
+        </ul>
+      </div>
+      <div class="hind"></div>
+    </section>
+
+    <!-- ============================================================== OFFER -->
+    <section class="view" id="v-offer">
+      <div class="sbar"><span>9:41</span><span class="sbar__r"><span class="sbar__sig"><i></i><i></i><i></i><i></i></span><span class="sbar__bat"></span></span></div>
+      <div class="nav"><button class="nav__b" data-back>&#8249;</button><span class="nav__t">YOUR OFFER</span><span class="nav__r"></span></div>
+      <div class="scroll">
+        <div class="offer">
+          <div class="offer__t"><span class="dot" id="otier-dot"></span><span id="otier"></span></div>
+          <div class="offer__a" id="oamt"></div>
+          <div class="offer__s" id="oblurb"></div>
+        </div>
+        <div class="band">
+          <div class="band__t"><div class="band__f" id="ofill"></div><div class="band__p" id="opin"></div></div>
+          <div class="band__e"><span id="oband"></span></div>
+        </div>
+        <p class="u-met" id="oqual"></p>
+        <div class="gshots" id="oshots"></div>
+        <div class="checks" style="margin-top:14px">
+          <div class="check"><span class="check__k">Pilling &amp; surface</span><span class="check__v">No pilling detected</span></div>
+          <div class="check"><span class="check__k">Seams &amp; structure</span><span class="check__v">Intact, shoulder line true</span></div>
+          <div class="check"><span class="check__k">Staining &amp; marks</span><span class="check__v">None detected</span></div>
+          <div class="check"><span class="check__k">Hardware &amp; fastenings</span><span class="check__v">All buttons present</span></div>
+        </div>
+        <p class="u-met" style="margin-top:10px">Zara re-grades on arrival. If the tier drops you take a revised offer
+          or the garment back, shipped free. The grade is simulated in this demo; the capture coaching is real.</p>
+      </div>
+      <div class="actionbar">
+        <button class="btn btn--pri" id="oaccept" data-go="fulfil">ACCEPT</button>
+        <div style="display:flex;justify-content:space-between;padding-top:2px">
+          <button class="link" data-go="appeal">Appeal the grade</button>
+          <button class="link" data-act="restart">Decline</button>
+        </div>
+      </div>
+      <div class="hind"></div>
+    </section>
+
+    <!-- ============================================================= APPEAL -->
+    <section class="view" id="v-appeal">
+      <div class="sbar"><span>9:41</span><span class="sbar__r"><span class="sbar__sig"><i></i><i></i><i></i><i></i></span><span class="sbar__bat"></span></span></div>
+      <div class="nav"><button class="nav__b" data-back>&#8249;</button><span class="nav__t">APPEAL THE GRADE</span><span class="nav__r"></span></div>
+      <div class="scroll">
+        <p class="u-met">Tell us what we read wrong and add a photograph of it.</p>
+        <div style="margin:14px 0">
+          <button class="opt"><div><div class="opt__t">The lining is unmarked</div></div><i></i></button>
+          <button class="opt is-on"><div><div class="opt__t">The label is still attached</div></div><i></i></button>
+          <button class="opt"><div><div class="opt__t">There is no pilling</div></div><i></i></button>
+        </div>
+        <p class="u-met">A person reviews appeals within one working day. If we agree, the offer is reissued at the
+          higher tier.</p>
+      </div>
+      <div class="actionbar"><button class="btn btn--pri" data-act="appeal-ok">SUBMIT APPEAL</button></div>
+      <div class="hind"></div>
+    </section>
+
+    <!-- ============================================ FULFILMENT PREFERENCE -->
+    <section class="view" id="v-fulfil">
+      <div class="sbar"><span>9:41</span><span class="sbar__r"><span class="sbar__sig"><i></i><i></i><i></i><i></i></span><span class="sbar__bat"></span></span></div>
+      <div class="nav"><button class="nav__b" data-back>&#8249;</button><span class="nav__t">HOW IT TRAVELS</span><span class="nav__r"></span></div>
+      <div class="scroll">
+        <p class="u-met" style="margin:0 0 14px">Choose this once. When it sells, we tell you exactly what to do —
+          you never have to decide in the moment.</p>
+        <button class="opt is-on" data-fulfil="store">
+          <div><div class="opt__t">Drop it at a Zara store</div>
+          <div class="opt__s">Zara SoHo · 580 Broadway · 0.4 mi<br>No packaging needed. Any store that takes returns.</div></div><i></i>
+        </button>
+        <button class="opt" data-fulfil="ship">
+          <div><div class="opt__t">Ship it with a prepaid label</div>
+          <div class="opt__s">We email the label. Drop at any carrier point within three days.</div></div><i></i>
+        </button>
+        <div style="background:#f4f3f1;padding:13px;margin-top:14px">
+          <p class="u-eye">WHERE IT ACTUALLY GOES</p>
+          <p class="u-met" style="margin:5px 0 0">Into the store returns flow Zara already runs, in reverse. Out on
+            ship-from-store, which Zara already does for in-store stock. No new distribution centre, no new carrier —
+            the delta is one inbound leg and one grading touch.</p>
+        </div>
+      </div>
+      <div class="actionbar"><button class="btn btn--pri" data-go="listed">LIST IT</button></div>
+      <div class="hind"></div>
+    </section>
+
+    <!-- ============================================================= LISTED -->
+    <section class="view" id="v-listed">
+      <div class="sbar"><span>9:41</span><span class="sbar__r"><span class="sbar__sig"><i></i><i></i><i></i><i></i></span><span class="sbar__bat"></span></span></div>
+      <div class="nav"><span></span><span class="nav__t">LISTED</span><span></span></div>
+      <div class="center" style="justify-content:flex-start;padding-top:40px">
+        <div style="font-size:36px">&#10003;</div>
+        <h2 style="font-family:var(--display);font-weight:400;font-size:22px;margin:12px 0 8px">It's live.</h2>
+        <p class="u-met" style="max-width:30ch">Your blazer is in Zara Pre-Owned at <b id="listed-price">$82.00</b>,
+          graded <b id="listed-tier">EXCELLENT</b>. Nothing else to do — no listing to maintain, no messages to answer.</p>
+        <p class="u-met" style="margin-top:14px;max-width:30ch">When it sells we'll tell you to
+          <b id="listed-pref">drop it at Zara SoHo</b>.</p>
+      </div>
+      <div class="actionbar"><button class="btn btn--pri" data-go="sold">&#9654;&nbsp; SOMEONE BUYS IT</button></div>
+      <div class="hind"></div>
+    </section>
+
+    <!-- ==================================================== SOLD (push #2) -->
+    <section class="view" id="v-sold">
+      <div class="sbar sbar--light"><span>14:06</span><span class="sbar__r"><span class="sbar__sig"><i></i><i></i><i></i><i></i></span><span class="sbar__bat"></span></span></div>
+      <div class="lock">
+        <div class="lock__c"><b>14:06</b><span>Saturday, 15 November</span></div>
+        <button class="push" data-go="next">
+          <span class="push__i"><span class="wordmark">Z</span></span>
+          <span><span class="push__t">ZARA</span>
+            <span class="push__b">Sold. Your tweed blazer went to a buyer who wanted size M.
+              <b id="push-next">Drop it at Zara SoHo</b> in the next 3 days.</span></span>
+          <span class="push__x">now</span>
+        </button>
+        <p class="lock__hint">Tap for next steps</p>
+      </div>
+      <div class="hind hind--light"></div>
+    </section>
+
+    <!-- ========================================================= NEXT STEPS -->
+    <section class="view" id="v-next">
+      <div class="sbar"><span>14:06</span><span class="sbar__r"><span class="sbar__sig"><i></i><i></i><i></i><i></i></span><span class="sbar__bat"></span></span></div>
+      <div class="nav"><button class="nav__b" data-back>&#8249;</button><span class="nav__t">NEXT STEPS</span><span class="nav__r"></span></div>
+      <div class="scroll">
+        <div class="row" style="border:0;padding-top:4px">
+          <div class="row__m"><img src="assets/img/po-blazer-e.webp" alt=""></div>
+          <div><div class="row__t">TEXTURED TWEED BLAZER</div>
+            <div class="row__s">Size M · <span id="next-tier">EXCELLENT</span> · <span id="next-price">$82.00</span></div>
+            <span class="badge">SOLD</span></div>
+          <div class="row__a"></div>
+        </div>
+        <div id="next-steps" style="margin-top:16px"></div>
+        <div class="track" style="margin-top:18px">
+          <div class="track__n done"><div class="track__d"></div><div><div class="track__t">Graded and listed</div><div class="track__s">14 Nov, 9:48</div></div></div>
+          <div class="track__n now"><div class="track__d"></div><div><div class="track__t">Sold</div><div class="track__s">15 Nov, 14:06</div></div></div>
+          <div class="track__n"><div class="track__d"></div><div><div class="track__t">Grade confirmed by the store</div><div class="track__s">On arrival</div></div></div>
+          <div class="track__n"><div class="track__d"></div><div><div class="track__t">Paid out</div><div class="track__s">via Stripe, 2–3 working days</div></div></div>
+        </div>
+      </div>
+      <div class="actionbar"><button class="btn btn--pri" data-go="paid">I'VE DROPPED IT OFF</button></div>
+      <div class="hind"></div>
+    </section>
+
+    <!-- =============================================================== PAID -->
+    <section class="view" id="v-paid">
+      <div class="sbar"><span>9:41</span><span class="sbar__r"><span class="sbar__sig"><i></i><i></i><i></i><i></i></span><span class="sbar__bat"></span></span></div>
+      <div class="nav"><span></span><span class="nav__t">MY SALES</span><span></span></div>
+      <div class="scroll">
+        <div class="track">
+          <div class="track__n done"><div class="track__d"></div><div><div class="track__t">Graded and listed</div><div class="track__s">14 Nov</div></div></div>
+          <div class="track__n done"><div class="track__d"></div><div><div class="track__t">Sold</div><div class="track__s">15 Nov</div></div></div>
+          <div class="track__n done"><div class="track__d"></div><div><div class="track__t">Grade confirmed at Zara SoHo</div><div class="track__s">16 Nov, 10:02</div></div></div>
+          <div class="track__n now"><div class="track__d"></div><div><div class="track__t">Paid out</div><div class="track__s">via Stripe</div></div></div>
+        </div>
+        <div class="payout">
+          <span class="u-eye">YOU RECEIVE</span>
+          <div class="payout__a" id="payamt">$82.00</div>
+          <p class="u-met">Participation in Zara Resell is free of charge for the seller. The buyer paid the
+            $1.00 + 5% transaction fee on top.</p>
+        </div>
+        <div style="background:#f4f3f1;padding:13px;margin-top:14px">
+          <p class="u-eye">THE SELLER'S ENTIRE JOB</p>
+          <p class="u-met" style="margin:5px 0 0">Four photographs, one tap on an offer, one choice about delivery made
+            once. No listing written, no price guessed, no buyer messaged.</p>
+        </div>
+      </div>
+      <div class="actionbar"><button class="btn btn--quiet" data-act="restart">RUN IT AGAIN</button></div>
+      <div class="hind"></div>
+    </section>
+
+    <div class="toast" id="toast"></div>
+  </div></div>
+
+  <div class="note"><b>RUNNING IT</b>
+    Tap the notification. At the photograph step the three chips go black when exposure, sharpness and framing actually
+    pass — that is measuring the frame. Press <b>1</b>, <b>2</b> or <b>3</b> to lock the tier before the last shot;
+    Space fires the shutter. No camera? Choose <b>Use the sample garment</b> and the flow still completes.</div>
+</div>
+<script src="assets/app-seller.js"></script>
+</body>
+</html>

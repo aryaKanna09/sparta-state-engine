@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ZARA — Buyer (iOS)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400&display=swap">
+<link rel="stylesheet" href="assets/ios.css">
+<link rel="icon" href="assets/favicon.svg">
+</head>
+<body>
+<div class="stage">
+  <div class="stage__t">
+    <h1>ZARA — Buyer</h1>
+    <p>Pre-owned sits beside new on every product, not only when a size sells out. Buying pre-owned is the same flow
+       as buying new.</p>
+  </div>
+
+  <div class="iphone"><div class="iphone__screen">
+
+    <!-- =========================================================== HOME -->
+    <section class="view is-on" id="v-home">
+      <div class="sbar sbar--light"><span>9:41</span><span class="sbar__r"><span class="sbar__sig"><i></i><i></i><i></i><i></i></span><span class="sbar__bat"></span></span></div>
+      <div class="nav nav--bare" style="color:#fff"><button class="nav__b" style="color:#fff">&#9776;</button><span></span><span class="nav__r" style="color:#fff" data-bagc>BAG</span></div>
+      <div class="scroll scroll--flush">
+        <button class="hero" data-go="plp" style="display:block;width:100%">
+          <img src="assets/img/skirt.webp" alt="Zara campaign">
+          <span class="hero__mark wordmark">ZARA</span>
+          <span class="hero__cap"><b>WOMAN · NEW COLLECTION</b><span>Tap to browse</span></span>
+        </button>
+      </div>
+      <div class="botbar">
+        <div class="searchfield"><span>SEARCH</span></div>
+        <div class="botbar__row">
+          <button aria-current="page"><i>&#9633;</i>MENU</button>
+          <button><i>&#9825;</i>SAVED</button>
+          <button data-go="polist"><i>&#8634;</i>PRE-OWNED</button>
+          <button><i>&#9711;</i>PROFILE</button>
+          <button data-go="bag"><i>&#9636;</i>BAG</button>
+        </div>
+      </div>
+      <div class="hind hind--light"></div>
+    </section>
+
+    <!-- ======================================================== LISTING -->
+    <section class="view" id="v-plp">
+      <div class="sbar"><span>9:41</span><span class="sbar__r"><span class="sbar__sig"><i></i><i></i><i></i><i></i></span><span class="sbar__bat"></span></span></div>
+      <div class="nav"><button class="nav__b" data-back>&#8249;</button><span class="nav__t">WOMAN · NEW IN</span><span class="nav__r">FILTER</span></div>
+      <div class="scroll scroll--flush"><div class="grid2" id="plpgrid"></div></div>
+      <div class="botbar">
+        <div class="searchfield"><span>SEARCH</span></div>
+        <div class="botbar__row">
+          <button ><i>&#9633;</i>MENU</button>
+          <button><i>&#9825;</i>SAVED</button>
+          <button data-go="polist"><i>&#8634;</i>PRE-OWNED</button>
+          <button><i>&#9711;</i>PROFILE</button>
+          <button data-go="bag"><i>&#9636;</i>BAG</button>
+        </div>
+      </div>
+      <div class="hind"></div>
+    </section>
+
+    <!-- ============================================================ PDP -->
+    <section class="view" id="v-pdp">
+      <div class="sbar"><span>9:41</span><span class="sbar__r"><span class="sbar__sig"><i></i><i></i><i></i><i></i></span><span class="sbar__bat"></span></span></div>
+      <div class="nav"><button class="nav__b" data-back>&#8249;</button><span class="nav__t"></span><span class="nav__r" data-bagc>BAG</span></div>
+      <div class="scroll scroll--flush">
+        <div class="gal"><div class="gal__s"><img id="pdp-img" src="assets/img/blazer.webp" alt=""></div>
+          <div class="gal__dots"><i class="on"></i><i></i><i></i></div></div>
+        <div class="gal__s"><img id="pdp-img2" src="assets/img/blazer-2.webp" alt=""></div>
+        <div class="pinfo">
+          <h1 class="pname" id="pdp-name">TEXTURED TWEED BLAZER - Blue</h1>
+          <p class="pprice" id="pdp-price">$109.00</p>
+          <p class="pref" id="pdp-ref">Blue 2757/397/403</p>
+          <div class="swatches">
+            <span class="sw" aria-checked="true"><i style="background:#8fb4d9"></i></span>
+            <span class="sw"><i style="background:#1e1e1e"></i></span>
+            <span class="sw"><i style="background:#d8cfc2"></i></span>
+          </div>
+          <p class="pdesc" id="pdp-desc">Regular-fit blazer with a lapel collar, long sleeves, front welt pockets and frayed trims.</p>
+          <div class="acc">
+            <button class="acc__r"><span class="u-lab">COMPOSITION AND CARE</span><span>+</span></button>
+            <button class="acc__r"><span class="u-lab">SHIPPING AND RETURNS</span><span>+</span></button>
+            <button class="acc__r"><span class="u-lab">JOIN LIFE</span><span>+</span></button>
+          </div>
+        </div>
+      </div>
+      <!-- pre-owned is a standing option, not a consolation prize -->
+      <div class="actionbar">
+        <button class="btn btn--pri" data-sheet="size">ADD TO BAG</button>
+        <button class="btn btn--sec" data-sheet="po">
+          SHOP PRE-OWNED &nbsp;·&nbsp; <span id="pdp-pofrom">FROM $46</span>
+        </button>
+      </div>
+      <div class="hind"></div>
+    </section>
+
+    <!-- ================================================= PRE-OWNED PDP -->
+    <section class="view" id="v-popdp">
+      <div class="sbar"><span>9:41</span><span class="sbar__r"><span class="sbar__sig"><i></i><i></i><i></i><i></i></span><span class="sbar__bat"></span></span></div>
+      <div class="nav"><button class="nav__b" data-back>&#8249;</button><span class="nav__t">PRE-OWNED</span><span class="nav__r" data-bagc>BAG</span></div>
+      <div class="scroll scroll--flush">
+        <div class="gal" style="position:relative">
+          <div class="gal__s"><img id="po-img" src="assets/img/po-blazer-e.webp" alt=""></div>
+          <span class="tile__flag" style="top:auto;bottom:10px;left:10px;background:rgba(255,255,255,.94);color:#000">OWNER'S PHOTO</span>
+        </div>
+        <div class="gal__s" style="position:relative"><img id="po-img2" src="assets/img/blazer.webp" alt="">
+          <span class="tile__flag" style="top:auto;bottom:10px;left:10px;background:rgba(255,255,255,.94);color:#000">AS SOLD NEW</span>
+        </div>
+        <div class="pinfo">
+          <p class="u-eye">ZARA PRE-OWNED</p>
+          <h1 class="pname" id="po-name" style="margin-top:6px">TEXTURED TWEED BLAZER - Blue</h1>
+          <p class="pprice"><span id="po-price">$82.00</span> <span class="u-str" id="po-was">$109.00</span></p>
+          <p class="pref" id="po-ref">Blue 2757/397/403 · Size M</p>
+
+          <div style="background:#f4f3f1;padding:14px;margin:16px 0">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
+              <span class="unit__t"><span class="dot" id="po-dot"></span><span id="po-tier"></span></span>
+              <span class="link">How we grade</span>
+            </div>
+            <p class="u-met" id="po-blurb" style="margin:0 0 12px"></p>
+            <div class="checks" id="po-checks"></div>
+            <p class="u-met" style="margin:11px 0 0">Graded from the owner's photographs and confirmed by Zara on arrival.</p>
+          </div>
+
+          <ul id="po-facts"></ul>
+        </div>
+      </div>
+      <div class="actionbar"><button class="btn btn--pri" data-add-po>ADD TO BAG</button></div>
+      <div class="hind"></div>
+    </section>
+
+    <!-- =========================================== PRE-OWNED CATALOGUE -->
+    <section class="view" id="v-polist">
+      <div class="sbar"><span>9:41</span><span class="sbar__r"><span class="sbar__sig"><i></i><i></i><i></i><i></i></span><span class="sbar__bat"></span></span></div>
+      <div class="nav"><button class="nav__b" data-back>&#8249;</button><span class="nav__t">PRE-OWNED</span><span class="nav__r" data-bagc>BAG</span></div>
+      <div class="scroll">
+        <p class="u-met" style="margin:0 0 11px">Filter by condition — which Zara's catalogue cannot do today, because nothing is graded.</p>
+        <div style="display:flex;gap:6px;margin-bottom:14px" id="cond">
+          <button class="btn btn--quiet btn--sm" data-tier="e" style="width:auto;padding:0 10px"><span class="dot dot--e"></span>EXCELLENT</button>
+          <button class="btn btn--quiet btn--sm" data-tier="g" style="width:auto;padding:0 10px"><span class="dot dot--g"></span>GOOD</button>
+          <button class="btn btn--quiet btn--sm" data-tier="f" style="width:auto;padding:0 10px"><span class="dot dot--f"></span>FAIR</button>
+        </div>
+      </div>
+      <div class="scroll scroll--flush" style="flex:3"><div class="grid2" id="pogrid"></div></div>
+      <div class="hind"></div>
+    </section>
+
+    <!-- ============================================================ BAG -->
+    <section class="view" id="v-bag">
+      <div class="sbar"><span>9:41</span><span class="sbar__r"><span class="sbar__sig"><i></i><i></i><i></i><i></i></span><span class="sbar__bat"></span></span></div>
+      <div class="nav"><button class="nav__b" data-back>&#8249;</button><span class="nav__t">SHOPPING BAG</span><span class="nav__r"></span></div>
+      <div class="scroll">
+        <div id="bagitems"></div>
+        <div id="bagsum" hidden>
+          <ul class="sum" style="margin-top:12px">
+            <li><span>Subtotal</span><b data-sub>$0.00</b></li>
+            <li data-feerow hidden><span>Pre-owned transaction fee</span><b data-fee>$0.00</b></li>
+            <li><span>Shipping</span><b data-ship>$4.95</b></li>
+          </ul>
+          <div class="sumtot"><span>TOTAL</span><b data-total>$0.00</b></div>
+          <p class="u-met" data-feenote hidden>$1.00 plus 5% of the item price, as on Zara Resell today. The seller receives their full asking price.</p>
+        </div>
+      </div>
+      <div class="actionbar"><button class="btn btn--pri" id="bagcta" data-go="done">CONTINUE</button></div>
+      <div class="hind"></div>
+    </section>
+
+    <!-- ====================================================== CONFIRMED -->
+    <section class="view" id="v-done">
+      <div class="sbar"><span>9:41</span><span class="sbar__r"><span class="sbar__sig"><i></i><i></i><i></i><i></i></span><span class="sbar__bat"></span></span></div>
+      <div class="nav"><span></span><span class="nav__t">ORDER CONFIRMED</span><span></span></div>
+      <div class="scroll center" style="justify-content:flex-start;padding-top:36px">
+        <div style="font-size:38px">&#10003;</div>
+        <h2 style="font-family:var(--display);font-weight:400;font-size:23px;margin:12px 0 8px">Thank you.</h2>
+        <p class="u-met" style="max-width:29ch" id="done-sub"></p>
+        <div style="background:#f4f3f1;padding:14px;margin-top:20px;text-align:left">
+          <p class="u-eye">WHAT HAPPENS NOW</p>
+          <p class="u-met" style="margin:6px 0 0">The person who listed this gets a notification on their phone, and
+            sends it in the way they already chose — drop-off at their Zara store, or a prepaid label. Zara confirms
+            the grade on arrival and ships it to you.</p>
+        </div>
+      </div>
+      <div class="actionbar"><button class="btn btn--quiet" data-restart>START OVER</button></div>
+      <div class="hind"></div>
+    </section>
+
+    <!-- ========================================================= SHEETS -->
+    <div class="sheet-bg" id="sheetbg"></div>
+
+    <div class="sheet" id="sheet-size">
+      <div class="sheet__grab"></div>
+      <div class="sheet__h"><span class="u-lab">SELECT SIZE</span><button class="sheet__x" data-close>&times;</button></div>
+      <div class="sheet__b">
+        <div class="sizes" id="sizelist"></div>
+        <p class="u-met" style="margin-top:12px"><u>See measurements</u> · <u>Find your size</u></p>
+        <p class="u-met">Check in-store availability</p>
+        <button class="btn btn--pri" style="margin-top:12px" data-add-new>ADD TO BAG</button>
+      </div>
+    </div>
+
+    <div class="sheet" id="sheet-po">
+      <div class="sheet__grab"></div>
+      <div class="sheet__h"><span class="u-lab" id="posheet-h">PRE-OWNED · THIS ITEM</span><button class="sheet__x" data-close>&times;</button></div>
+      <div class="sheet__b">
+        <p class="u-met" style="margin:0 0 4px" id="posheet-sub"></p>
+        <div id="units"></div>
+        <div style="background:#f4f3f1;padding:13px;margin-top:14px">
+          <p class="u-met" style="margin:0">Every listing is a garment someone already owns. Zara grades it, sets the
+            price band and handles the logistics — the seller never writes a listing.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+  </div></div>
+
+  <div class="note"><b>WHAT IS OURS</b>
+    Pre-owned appearing beside new on every product, the grading, the condition filter and the price band are the
+    proposal. The chrome, 2:3 imagery, reference line and the $1.00 + 5% buyer fee are reconstructed from Zara.
+    Condition tier names are a team assumption — Zara publishes no ladder.</div>
+</div>
+<script src="assets/app-buyer.js"></script>
+</body>
+</html>
