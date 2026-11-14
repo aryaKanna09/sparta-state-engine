@@ -155,13 +155,13 @@ function note(label, text) {
 }
 
 /* IMAGE SLOT.
-   Renders a real photograph from /assets/img/<name>.jpg when that file is
+   Renders a real photograph from /assets/img/<name>.webp when that file is
    present, and silently falls back to a styled editorial placeholder when it
    is not. Drop Zara's own product shots into public/assets/img/ using the
    documented filenames and every screen picks them up with no code change. */
 function pic(name, variant = 'a', alt = '') {
   if (!name) return shot(variant);
-  return `<img src="/assets/img/${name}.jpg" alt="${esc(alt)}" loading="lazy"
+  return `<img src="/assets/img/${name}.webp" alt="${esc(alt)}" loading="lazy"
     onerror="this.outerHTML=document.getElementById('ph-${variant}').innerHTML">`;
 }
 
