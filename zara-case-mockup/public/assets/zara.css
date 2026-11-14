@@ -816,3 +816,4 @@ body.has-chrome .site-footer{margin-top:52px}
   .phone,.phone--live{width:100%;flex-basis:100%;border:0}
 }
 .glock::before{content:" · "}
+.wt__disc{color:#6a6a6a;border:1px solid #333;padding:4px 8px;white-space:nowrap}

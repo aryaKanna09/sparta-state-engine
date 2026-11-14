@@ -17,9 +17,9 @@
   // The sold-out size opens the pre-owned sheet.
   document.addEventListener('click', function (e) {
     var open = e.target.closest && e.target.closest('[data-open-sheet]');
-    if (open) { e.preventDefault(); window.location.href = '/pdp-reloop.html'; return; }
+    if (open) { e.preventDefault(); window.location.href = 'pdp-reloop.html'; return; }
     var close = e.target.closest && e.target.closest('[data-close-sheet]');
-    if (close) { e.preventDefault(); window.location.href = '/pdp.html'; }
+    if (close) { e.preventDefault(); window.location.href = 'pdp.html'; }
   });
 
   // Accordions.

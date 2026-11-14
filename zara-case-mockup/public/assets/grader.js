@@ -155,7 +155,7 @@
       show('capture');
     };
     img.onerror = function () { show('capture'); };
-    img.src = '/assets/img/capture.jpg';
+    img.src = 'assets/img/capture.webp';
   }
 
   /* -------------------------------------------------------------- capture */

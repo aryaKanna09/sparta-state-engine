@@ -12,7 +12,7 @@ function index(manifest) {
   <div class="ix__group">
     <h2>${title}</h2>
     ${items.map((p) => `
-    <a class="ix__item" href="/${p.file}">
+    <a class="ix__item" href="${p.file}">
       <span class="ix__num">${String(p.step).padStart(2, '0')}</span>
       <span><span class="ix__t">${p.title}</span><span class="ix__d">${p.blurb}</span></span>
       <span class="ix__go">OPEN</span>

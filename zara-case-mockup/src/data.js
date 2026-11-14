@@ -89,7 +89,7 @@ const HERO = {
 };
 
 const PRODUCTS = [
-  { name: 'TEXTURED TWEED BLAZER', colour: 'Blue', price: 109.0, img: 'blazer', alt: 'blazer-2', ph: 'a', href: '/pdp.html' },
+  { name: 'TEXTURED TWEED BLAZER', colour: 'Blue', price: 109.0, img: 'blazer', alt: 'blazer-2', ph: 'a', href: 'pdp.html' },
   { name: 'DRAPED MIDI DRESS', colour: 'Black', price: 69.9, img: 'dress', ph: 'b' },
   { name: 'FRINGED STRIPED SKIRT', colour: 'Multicoloured', price: 89.9, img: 'skirt', ph: 'c' },
   { name: 'CROCHET KNIT TOP', colour: 'Oyster white', price: 49.9, img: 'knit', ph: 'e' },

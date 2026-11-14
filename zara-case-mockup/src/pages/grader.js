@@ -109,7 +109,7 @@ ${header({ nav: 'WOMAN' })}
             <div class="app-foot">
               <button class="btn btn--primary btn--block" id="oaccept">ACCEPT</button>
               <div class="foot-row">
-                <a class="link-u" href="/seller-appeal.html">Appeal the grade</a>
+                <a class="link-u" href="seller-appeal.html">Appeal the grade</a>
                 <button class="link-u" id="again">Start over</button>
               </div>
             </div>

@@ -14,11 +14,11 @@ function home() {
   return `
 ${header({ nav: 'WOMAN', logo: false })}
 <main class="hp">
-  <a class="hp__pane" href="/plp.html">
+  <a class="hp__pane" href="plp.html">
     <div class="hp__media">${pic('skirt', 'c', 'Zara campaign')}</div>
     <span class="hp__mark wordmark">ZARA</span>
   </a>
-  <a class="hp__pane" href="/plp.html">
+  <a class="hp__pane" href="plp.html">
     <div class="hp__media">${pic('dress', 'b', 'Zara campaign')}</div>
   </a>
   <div class="hp__rail">
@@ -129,7 +129,7 @@ function reloopSheet() {
   const unit = (u) => {
     const t = tierOf(u.tier);
     return `
-    <a class="unit" href="/preowned-pdp.html">
+    <a class="unit" href="preowned-pdp.html">
       <div class="unit__media">${pic(u.img, u.ph, HERO.name)}</div>
       <div>
         <div class="unit__tier"><span class="tierdot tierdot--${u.tier}"></span>${t.code}</div>
@@ -155,7 +155,7 @@ function reloopSheet() {
     <div class="sheet__ask">
       <p class="u-label">NOT THE ONE?</p>
       <p class="u-meta">We can ask the 14 people who bought this blazer in M whether they want to sell it. You will be notified if one is listed.</p>
-      <a class="btn btn--outline btn--block" href="/reloop-request.html">ASK OWNERS OF THIS ITEM</a>
+      <a class="btn btn--outline btn--block" href="reloop-request.html">ASK OWNERS OF THIS ITEM</a>
     </div>
   </div>
 </aside>`;
@@ -186,7 +186,7 @@ ${header({ nav: 'WOMAN' })}
   the same garment may already be sitting on Zara's own resale platform. Here the dead end becomes the trigger: the
   click is a demand signal, and it is routed to the people who are already holding the supply.`)}
 
-  <a class="btn btn--primary" href="/preowned.html">BROWSE ${COPY.programme}</a>
+  <a class="btn btn--primary" href="preowned.html">BROWSE ${COPY.programme}</a>
 </main>
 ${footer()}
 ${phTemplates()}`;
@@ -274,7 +274,7 @@ function preowned() {
   const card = ({ p, u }) => {
     const t = tierOf(u.tier);
     return `
-    <a class="card" href="/preowned-pdp.html">
+    <a class="card" href="preowned-pdp.html">
       <div class="card__media">
         ${pic(u.img, u.ph, p.name)}
         <span class="card__flag card__flag--reloop">${t.code}</span>
@@ -347,7 +347,7 @@ ${header({ nav: 'WOMAN', bagCount: 1 })}
       <div class="sum__total"><span>TOTAL</span><b>${money(u.price + fee + ship)}</b></div>
       <p class="u-meta sum__note">The pre-owned transaction fee is $1.00 plus 5% of the item price, as on Zara Resell today.
       The seller receives their full asking price.</p>
-      <a class="btn btn--primary btn--block" href="/order.html">CONTINUE</a>
+      <a class="btn btn--primary btn--block" href="order.html">CONTINUE</a>
     </aside>
   </div>
 </main>

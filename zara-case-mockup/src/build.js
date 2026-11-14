@@ -61,7 +61,7 @@ const MANIFEST = [
     note: 'Grading is a photography problem first.' },
 
   { file: 'grader.html', group: 'seller', title: 'Live camera grader', render: graderPage.grader,
-    script: '/assets/grader.js',
+    script: 'assets/grader.js',
     blurb: 'A working demo: opens the camera, coaches the shot for real, then returns a grade and a price.',
     note: 'This one actually runs. Press 1/2/3 to lock the tier.' },
 
@@ -101,8 +101,8 @@ function build() {
       wt: {
         step: p.step,
         total,
-        prev: i > 0 ? `/${steps[i - 1].file}` : null,
-        next: i < total - 1 ? `/${steps[i + 1].file}` : null,
+        prev: i > 0 ? `${steps[i - 1].file}` : null,
+        next: i < total - 1 ? `${steps[i + 1].file}` : null,
         note: p.note || '',
       },
     });

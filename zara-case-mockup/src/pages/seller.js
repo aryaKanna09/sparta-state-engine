@@ -179,9 +179,9 @@ function offer() {
     <a class="link-u" href="#" style="display:inline-block;margin-top:14px">See what the model looked at</a>
   </div>
   <div class="app-foot">
-    <a class="btn btn--primary btn--block" href="/seller-dropoff.html">ACCEPT ${money(price)}</a>
+    <a class="btn btn--primary btn--block" href="seller-dropoff.html">ACCEPT ${money(price)}</a>
     <div class="foot-row">
-      <a class="link-u" href="/seller-appeal.html">Appeal the grade</a>
+      <a class="link-u" href="seller-appeal.html">Appeal the grade</a>
       <a class="link-u" href="#">Decline</a>
     </div>
   </div>`;

@@ -20,13 +20,13 @@ function doc({ title, body, cls = '', wt = null, bodyClass = '', chrome = null, 
 <title>${esc(title)}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="/assets/zara.css">
-<link rel="icon" href="/assets/favicon.svg">
+<link rel="stylesheet" href="assets/zara.css">
+<link rel="icon" href="assets/favicon.svg">
 </head>
 <body class="${bodyClass}${wt ? ' has-wt' : ''}${framed ? ' has-chrome' : ''} ${cls}">
 ${framed ? `<div class="winwrap"><div class="win">${browserChrome(chrome)}<div class="win__page">${body}</div></div></div>` : body}
 ${wt ? walkthrough(wt) : ''}
-<script src="/assets/app.js" defer></script>
+<script src="assets/app.js" defer></script>
 ${script ? `<script src="${script}" defer></script>` : ''}
 </body>
 </html>`;
@@ -50,20 +50,20 @@ function browserChrome(url) {
 const TABS = ['WOMAN', 'MAN', 'KIDS', 'ZARA HOME', 'BEAUTY', 'MASSIMO DUTTI', 'PRE-OWNED', 'TRAVEL MODE'];
 
 function header({ nav = 'WOMAN', bordered = false, bagCount = 0, logo = true } = {}) {
-  const href = (t) => (t === 'PRE-OWNED' ? '/preowned.html' : '/plp.html');
+  const href = (t) => (t === 'PRE-OWNED' ? 'preowned.html' : 'plp.html');
   return `
 <header class="site-header${bordered ? ' site-header--bordered' : ''}">
   <div class="hdr-left">
     <button class="hdr-menu" aria-label="Menu"><span></span><span></span><span></span></button>
-    ${logo ? '<a class="hdr-logo" href="/home.html"><span class="wordmark">ZARA</span></a>' : ''}
+    ${logo ? '<a class="hdr-logo" href="home.html"><span class="wordmark">ZARA</span></a>' : ''}
     <nav class="hdr-nav">
       ${TABS.map((t) => `<a href="${href(t)}"${t === nav ? ' aria-current="page"' : ''}>${t}</a>`).join('\n      ')}
     </nav>
   </div>
   <div class="hdr-right">
     <div class="hdr-search"><input type="text" placeholder="Search" aria-label="Search"></div>
-    <a href="/bag.html">BAG ${bagCount ? `[${bagCount}]` : '[0]'}</a>
-    <a href="/account.html">LOG IN</a>
+    <a href="bag.html">BAG ${bagCount ? `[${bagCount}]` : '[0]'}</a>
+    <a href="account.html">LOG IN</a>
     <a href="#">HELP</a>
   </div>
 </header>`;
@@ -100,8 +100,9 @@ function footer() {
 function walkthrough({ step, total, prev, next, note = '' }) {
   return `
 <div class="wt">
-  <a href="/">CONTENTS</a>
+  <a href="index.html">CONTENTS</a>
   <span class="wt__step">STEP ${String(step).padStart(2, '0')} / ${String(total).padStart(2, '0')}</span>
+  <span class="wt__disc">CONCEPT MOCKUP &middot; NOT AFFILIATED WITH ZARA</span>
   ${note ? `<span class="wt__side">${note}</span>` : ''}
   <span class="wt__spacer"></span>
   <div class="wt__nav">
@@ -135,10 +136,10 @@ function appBar({ title, back = true, right = '' }) {
 function tabbar(active = '') {
   const t = [
     ['Home', '&#9634;', '/'],
-    ['Search', '&#9906;', '/plp.html'],
-    ['Pre-Owned', '&#8634;', '/preowned.html'],
-    ['Bag', '&#9723;', '/bag.html'],
-    ['Account', '&#9711;', '/account.html'],
+    ['Search', '&#9906;', 'plp.html'],
+    ['Pre-Owned', '&#8634;', 'preowned.html'],
+    ['Bag', '&#9723;', 'bag.html'],
+    ['Account', '&#9711;', 'account.html'],
   ];
   return `<nav class="tabbar">${t
     .map(([n, i, h]) => `<a href="${h}"${n === active ? ' aria-current="page"' : ''}><i>${i}</i>${n}</a>`)
@@ -161,7 +162,7 @@ function note(label, text) {
    documented filenames and every screen picks them up with no code change. */
 function pic(name, variant = 'a', alt = '') {
   if (!name) return shot(variant);
-  return `<img src="/assets/img/${name}.webp" alt="${esc(alt)}" loading="lazy"
+  return `<img src="assets/img/${name}.webp" alt="${esc(alt)}" loading="lazy"
     onerror="this.outerHTML=document.getElementById('ph-${variant}').innerHTML">`;
 }
 
