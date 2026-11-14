@@ -1,0 +1,723 @@
+/* =========================================================================
+   ZARA DESIGN SYSTEM — reconstructed for the BIC x Zara case competition
+   Hyper-realistic approximation of zara.com (desktop) + Zara app (mobile).
+   Tokens only in this file. Screens compose these.
+   ========================================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500&family=Inter:wght@300;400;500;600&display=swap');
+
+:root{
+  /* ---- palette (Zara is almost entirely monochrome) ---- */
+  --black:#000;
+  --white:#fff;
+  --ink:#000;
+  --grey-900:#333;      /* button hover, darkest ramp stop */
+  --grey-700:#555;      /* body + secondary copy — Zara's text is NOT pure black */
+  --grey-500:#767676;   /* meta, accordion sub-labels */
+  --grey-400:#999;
+  --grey-300:#ccc;      /* disabled / sold-out type / hairline */
+  --grey-200:#e3e3e3;   /* rules */
+  --grey-100:#f0f0f0;   /* pale fills */
+  --grey-050:#f7f7f7;   /* ramp top */
+
+  --focus:#0170e9;      /* Zara reserves colour for signals only */
+
+  /* JOIN LIFE is the only sanctioned accent on zara.com */
+  --joinlife:#5c6f52;
+  /* RELOOP — the case-comp feature mark. One constant: change it here. */
+  --reloop:#2f2f2f;
+  --reloop-wash:#f4f3f1;
+
+  --tier-excellent:#2d4a35;
+  --tier-good:#4a5a6b;
+  --tier-fair:#7a6a52;
+
+  /* ---- type ----
+     Zara ships Helvetica Now Text (commercial). The web-safe Helvetica stack
+     is closer to the real thing than Inter on macOS/iOS, so it leads and Inter
+     only catches Linux/Android. Weight 300 is the dominant UI weight — this is
+     the single most important fact for a convincing Zara mockup. */
+  --sans:'Helvetica Neue',Helvetica,Arial,Inter,sans-serif;
+  --display:'Bodoni Moda',Didot,'Times New Roman',serif;
+
+  /* Zara's defining trait: tiny type, wide tracking, uppercase, light weight */
+  --fs-nano:9px;     /* captions */
+  --fs-micro:11px;   /* small labels */
+  --fs-small:12px;   /* body, product name, price */
+  --fs-base:13px;    /* nav, buttons */
+  --fs-mid:14px;
+  --fs-lg:16px;
+  --fs-display:32px;
+
+  --w-light:300;     /* chrome */
+  --w-reg:400;
+
+  --tr-wide:.16em;   /* nav + eyebrows */
+  --tr-mid:.1em;     /* buttons */
+  --tr-tight:.04em;  /* product copy */
+
+  /* ---- layout ---- */
+  --gutter:16px;
+  --hairline:1px solid var(--grey-200);
+  --header-h:76px;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+
+html{-webkit-text-size-adjust:100%}
+
+body{
+  margin:0;
+  background:var(--white);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:var(--fs-small);
+  font-weight:var(--w-light);
+  line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+
+img{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+ul{margin:0;padding:0;list-style:none}
+
+/* =========================================================================
+   PRIMITIVES
+   ========================================================================= */
+
+/* Uppercase micro-label — the single most "Zara" text style */
+.u-label{
+  font-size:var(--fs-micro);
+  letter-spacing:var(--tr-wide);
+  text-transform:uppercase;
+  font-weight:400;
+}
+.u-eyebrow{
+  font-size:var(--fs-nano);
+  letter-spacing:var(--tr-wide);
+  text-transform:uppercase;
+  color:var(--grey-500);
+  font-weight:500;
+}
+.u-meta{font-size:var(--fs-micro);color:var(--grey-500);letter-spacing:var(--tr-tight)}
+.u-strike{text-decoration:line-through;color:var(--grey-400)}
+.u-rule{border:0;border-top:1px solid var(--grey-200);margin:0}
+
+/* The wordmark. Zara's 2019 logo is a tightly-overlapped Didone.
+   Bodoni Moda + negative tracking + horizontal compression gets very close. */
+.wordmark{
+  font-family:var(--display);
+  font-weight:400;
+  letter-spacing:-.075em;
+  transform:scaleX(.82);
+  transform-origin:left center;
+  line-height:.9;
+  display:inline-block;
+  white-space:nowrap;
+}
+
+/* Buttons — square, no radius, uppercase, letter-spaced */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  gap:8px;
+  min-height:44px;padding:0 24px;
+  font-size:var(--fs-micro);
+  letter-spacing:var(--tr-mid);
+  text-transform:uppercase;
+  border-radius:0;
+  transition:background .15s ease,color .15s ease,border-color .15s ease;
+}
+.btn--primary{background:var(--black);color:var(--white)}
+.btn--primary:hover{background:var(--grey-900)}
+.btn--outline{background:transparent;color:var(--black);border:1px solid var(--black)}
+.btn--outline:hover{background:var(--black);color:var(--white)}
+.btn--quiet{background:transparent;color:var(--black);border:1px solid var(--grey-300)}
+.btn--quiet:hover{border-color:var(--black)}
+.btn--block{width:100%}
+.btn--disabled{background:var(--grey-100);color:var(--grey-300);cursor:not-allowed}
+
+/* Underlined inline link, Zara's standard tertiary action */
+.link-u{
+  font-size:var(--fs-micro);
+  letter-spacing:var(--tr-tight);
+  text-decoration:underline;
+  text-underline-offset:3px;
+}
+.link-u:hover{color:var(--grey-700)}
+
+/* Accordion rows (COMPOSITION & CARE etc.) */
+.acc{border-top:1px solid var(--grey-200)}
+.acc__row{
+  width:100%;display:flex;align-items:center;justify-content:space-between;
+  padding:16px 0;text-align:left;
+}
+.acc__row .u-label{font-size:var(--fs-micro)}
+.acc__ico{font-size:14px;color:var(--grey-500);line-height:1}
+.acc__body{padding:0 0 18px;font-size:var(--fs-micro);color:var(--grey-700);line-height:1.7;max-width:46ch}
+
+/* =========================================================================
+   SITE CHROME (desktop zara.com)
+   ========================================================================= */
+.site-header{
+  position:sticky;top:0;z-index:60;
+  background:var(--white);
+  padding:18px 24px 14px;
+  display:grid;
+  grid-template-columns:1fr auto;
+  align-items:start;
+  gap:24px;
+}
+.site-header--bordered{border-bottom:1px solid var(--grey-200)}
+
+.hdr-left{display:flex;align-items:flex-start;gap:28px}
+.hdr-logo .wordmark{font-size:40px}
+
+.hdr-menu{
+  display:flex;flex-direction:column;gap:3px;
+  padding-top:6px;
+}
+.hdr-menu span{display:block;width:22px;height:1px;background:var(--black)}
+
+/* Zara's category nav is light grey on white — famously low contrast. */
+.hdr-nav{display:flex;gap:20px;padding-top:11px;flex-wrap:wrap}
+.hdr-nav a{
+  font-size:var(--fs-base);
+  font-weight:var(--w-light);
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:var(--grey-400);
+  padding-bottom:2px;
+  border-bottom:1px solid transparent;
+}
+.hdr-nav a:hover{color:var(--black)}
+.hdr-nav a[aria-current]{color:var(--black);border-bottom-color:var(--black)}
+
+/* The signature detail most mockups miss: SEARCH sits top-right and
+   BAG / LOG IN / HELP stack VERTICALLY down the right edge beneath it. */
+.hdr-right{
+  display:flex;flex-direction:column;align-items:flex-end;gap:7px;padding-top:4px;
+}
+.hdr-right a,.hdr-right button{
+  font-size:var(--fs-base);
+  font-weight:var(--w-light);
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:var(--grey-400);
+  white-space:nowrap;
+}
+.hdr-right a:hover{color:var(--black)}
+
+.hdr-search{
+  display:flex;align-items:center;
+  border-bottom:1px solid var(--grey-300);
+  padding-bottom:2px;min-width:118px;margin-bottom:3px;
+}
+.hdr-search input{
+  border:0;outline:0;background:none;width:100%;
+  font-family:var(--sans);font-size:var(--fs-base);font-weight:var(--w-light);
+  letter-spacing:.06em;text-transform:uppercase;color:var(--black);
+}
+.hdr-search input::placeholder{color:var(--grey-400);opacity:1}
+
+:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+
+/* Footer */
+.site-footer{
+  margin-top:72px;padding:48px 24px 36px;
+  border-top:1px solid var(--grey-200);
+}
+.footer-cols{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:36px;max-width:1100px;
+}
+.footer-cols h4{
+  margin:0 0 14px;font-size:var(--fs-micro);
+  letter-spacing:var(--tr-wide);text-transform:uppercase;font-weight:500;
+}
+.footer-cols li{margin-bottom:9px}
+.footer-cols a{font-size:var(--fs-micro);color:var(--grey-700);letter-spacing:var(--tr-tight)}
+.footer-cols a:hover{color:var(--black);text-decoration:underline;text-underline-offset:3px}
+.footer-base{
+  display:flex;flex-wrap:wrap;gap:18px;align-items:center;
+  margin-top:40px;padding-top:22px;border-top:1px solid var(--grey-200);
+}
+.footer-base span,.footer-base a{font-size:var(--fs-nano);letter-spacing:var(--tr-tight);color:var(--grey-500)}
+
+/* =========================================================================
+   PRODUCT GRID (PLP)
+   ========================================================================= */
+.plp-head{padding:8px 24px 20px;display:flex;align-items:baseline;justify-content:space-between}
+.plp-title{font-size:var(--fs-micro);letter-spacing:var(--tr-wide);text-transform:uppercase}
+.plp-tools{display:flex;gap:22px}
+.plp-tools button{font-size:var(--fs-micro);letter-spacing:var(--tr-wide);text-transform:uppercase}
+
+.grid{display:grid;gap:4px 4px;padding:0 4px}
+.grid--3{grid-template-columns:repeat(3,1fr)}
+.grid--4{grid-template-columns:repeat(4,1fr)}
+
+.card{position:relative;background:var(--grey-050)}
+.card__media{position:relative;aspect-ratio:2/3;overflow:hidden;background:var(--grey-100)}
+.card__media img,.card__media .ph{width:100%;height:100%;object-fit:cover;display:block}
+.card__media .alt{position:absolute;inset:0;opacity:0;transition:opacity .25s ease}
+.card:hover .card__media .alt{opacity:1}
+.card__info{padding:10px 12px 22px;background:var(--white)}
+.card__name{font-size:var(--fs-small);letter-spacing:var(--tr-tight);line-height:1.35}
+.card__price{font-size:var(--fs-small);letter-spacing:var(--tr-tight);margin-top:3px}
+.card__flag{
+  position:absolute;top:10px;left:10px;z-index:2;
+  font-size:var(--fs-nano);letter-spacing:var(--tr-wide);text-transform:uppercase;
+  background:var(--white);padding:4px 7px;
+}
+.card__flag--reloop{background:var(--black);color:var(--white)}
+
+/* =========================================================================
+   PDP
+   ========================================================================= */
+.pdp{display:grid;grid-template-columns:1fr 372px;gap:0;align-items:start}
+.pdp__gallery{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding-left:4px}
+.pdp__shot{aspect-ratio:2/3;background:var(--grey-100);overflow:hidden}
+.pdp__shot img,.pdp__shot .ph{width:100%;height:100%;object-fit:cover}
+.pdp__shot--tall{grid-column:1 / -1;aspect-ratio:3/2}
+
+.pdp__panel{position:sticky;top:var(--header-h);padding:14px 32px 60px}
+.pdp__name{
+  font-size:var(--fs-mid);letter-spacing:var(--tr-tight);
+  text-transform:uppercase;font-weight:400;margin:0 0 6px;line-height:1.3;
+}
+.pdp__price{font-size:var(--fs-small);letter-spacing:var(--tr-tight);margin:0 0 4px}
+.pdp__ref{font-size:var(--fs-nano);color:var(--grey-500);letter-spacing:var(--tr-tight)}
+
+.swatches{display:flex;gap:8px;margin:20px 0 6px}
+.swatch{width:18px;height:18px;border:1px solid var(--grey-300);padding:1px;background:var(--white)}
+.swatch i{display:block;width:100%;height:100%}
+.swatch[aria-checked="true"]{border-color:var(--black)}
+
+/* --- size selector: the pivot of the whole concept --- */
+.sizes{margin:22px 0 0;border-top:1px solid var(--grey-200)}
+.size-row{
+  width:100%;display:flex;align-items:center;justify-content:space-between;
+  padding:13px 2px;border-bottom:1px solid var(--grey-200);text-align:left;
+}
+.size-row__name{font-size:var(--fs-small);letter-spacing:var(--tr-mid)}
+.size-row__meta{font-size:var(--fs-nano);letter-spacing:var(--tr-tight);color:var(--grey-500);text-transform:uppercase}
+.size-row:hover:not(.is-out) .size-row__name{text-decoration:underline;text-underline-offset:4px}
+.size-row.is-selected{background:var(--grey-050)}
+.size-row.is-selected .size-row__name{font-weight:500}
+.size-row.is-out{cursor:default}
+.size-row.is-out .size-row__name{color:var(--grey-300);text-decoration:line-through}
+
+/* the injected RELOOP affordance, in place of the dead size */
+.size-row__reloop{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:var(--fs-nano);letter-spacing:var(--tr-wide);text-transform:uppercase;
+  color:var(--black);border-bottom:1px solid var(--black);padding-bottom:2px;
+}
+.size-row__reloop::before{
+  content:"";width:6px;height:6px;border-radius:50%;
+  background:var(--black);
+}
+.size-row.is-out.has-reloop{background:var(--reloop-wash)}
+
+.pdp__actions{margin-top:22px;display:grid;gap:10px}
+.pdp__sublinks{display:flex;gap:18px;margin-top:14px}
+
+/* =========================================================================
+   PRE-OWNED / RELOOP surfaces
+   ========================================================================= */
+.wash{background:var(--reloop-wash)}
+
+.sheet-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.28);z-index:90}
+.sheet{
+  position:fixed;top:0;right:0;bottom:0;width:480px;max-width:100vw;
+  background:var(--white);z-index:91;overflow:auto;
+  box-shadow:-1px 0 0 var(--grey-200);
+}
+.sheet__head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:22px 28px 16px;border-bottom:1px solid var(--grey-200);
+  position:sticky;top:0;background:var(--white);
+}
+.sheet__title{font-size:var(--fs-micro);letter-spacing:var(--tr-wide);text-transform:uppercase}
+.sheet__close{font-size:18px;line-height:1}
+.sheet__body{padding:24px 28px 40px}
+
+/* a matched pre-owned unit */
+.unit{display:grid;grid-template-columns:92px 1fr;gap:16px;padding:20px 0;border-bottom:1px solid var(--grey-200)}
+.unit__media{aspect-ratio:2/3;background:var(--grey-100);overflow:hidden}
+.unit__media img,.unit__media .ph{width:100%;height:100%;object-fit:cover}
+.unit__tier{font-size:var(--fs-nano);letter-spacing:var(--tr-wide);text-transform:uppercase;font-weight:500}
+.unit__price{font-size:var(--fs-small);letter-spacing:var(--tr-tight);margin-top:6px}
+.unit__note{font-size:var(--fs-nano);color:var(--grey-500);margin-top:6px;line-height:1.6}
+
+.tierdot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:7px;vertical-align:1px}
+.tierdot--e{background:var(--tier-excellent)}
+.tierdot--g{background:var(--tier-good)}
+.tierdot--f{background:var(--tier-fair)}
+
+/* condition report: the four physical checks */
+.checks{display:grid;gap:1px;background:var(--grey-200);border:1px solid var(--grey-200)}
+.check{background:var(--white);padding:13px 14px;display:flex;align-items:center;justify-content:space-between}
+.check__k{font-size:var(--fs-micro);letter-spacing:var(--tr-tight)}
+.check__v{font-size:var(--fs-nano);letter-spacing:var(--tr-wide);text-transform:uppercase;color:var(--grey-700)}
+
+/* price band visualisation */
+.band{margin:18px 0 6px}
+.band__track{position:relative;height:2px;background:var(--grey-200)}
+.band__fill{position:absolute;top:0;bottom:0;background:var(--black)}
+.band__pin{position:absolute;top:-4px;width:1px;height:10px;background:var(--black)}
+.band__ends{display:flex;justify-content:space-between;margin-top:9px}
+.band__ends span{font-size:var(--fs-nano);color:var(--grey-500);letter-spacing:var(--tr-tight)}
+
+/* =========================================================================
+   MOBILE APP FRAME (seller flow)
+   ========================================================================= */
+.phones{display:flex;flex-wrap:wrap;gap:34px;justify-content:center;padding:22px 24px 70px}
+
+.phone{
+  width:390px;flex:0 0 390px;
+  border:1px solid var(--grey-200);
+  background:var(--white);
+  display:flex;flex-direction:column;
+  position:relative;
+}
+.phone__cap{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:9px 18px 7px;font-size:var(--fs-nano);letter-spacing:.02em;font-weight:500;
+}
+.phone__screen{flex:1;min-height:660px;display:flex;flex-direction:column;position:relative;overflow:hidden}
+.phone__label{
+  margin-top:10px;font-size:var(--fs-nano);letter-spacing:var(--tr-wide);
+  text-transform:uppercase;color:var(--grey-500);text-align:center;
+}
+
+.app-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 18px;border-bottom:1px solid var(--grey-200);
+}
+.app-bar__title{font-size:var(--fs-micro);letter-spacing:var(--tr-wide);text-transform:uppercase}
+.app-bar__back{font-size:15px;line-height:1}
+
+.app-body{flex:1;overflow:auto;padding:20px 18px 24px}
+.app-foot{padding:14px 18px 20px;border-top:1px solid var(--grey-200);display:grid;gap:9px}
+
+.tabbar{display:flex;border-top:1px solid var(--grey-200)}
+.tabbar a{flex:1;padding:11px 0 14px;text-align:center;font-size:9px;letter-spacing:var(--tr-wide);text-transform:uppercase;color:var(--grey-400)}
+.tabbar a[aria-current]{color:var(--black)}
+.tabbar i{display:block;font-size:14px;margin-bottom:5px;font-style:normal}
+
+/* iOS-style push notification */
+.push{
+  margin:14px;padding:13px 15px;
+  background:rgba(250,250,250,.96);
+  border:1px solid var(--grey-200);
+  border-radius:16px;
+  display:grid;grid-template-columns:34px 1fr;gap:12px;align-items:start;
+  box-shadow:0 8px 28px rgba(0,0,0,.1);
+}
+.push__icon{
+  width:34px;height:34px;background:var(--black);
+  display:flex;align-items:center;justify-content:center;
+}
+.push__icon .wordmark{font-size:13px;color:var(--white);transform:scaleX(.8)}
+.push__t{font-size:var(--fs-micro);font-weight:600;letter-spacing:.01em}
+.push__b{font-size:var(--fs-micro);color:var(--grey-700);line-height:1.5;margin-top:2px}
+.push__time{font-size:9px;color:var(--grey-400)}
+
+/* lockscreen backdrop for the notification screen */
+.lock{
+  flex:1;display:flex;flex-direction:column;
+  background:linear-gradient(170deg,#2a2724 0%,#4a443d 48%,#6d655a 100%);
+}
+.lock__clock{text-align:center;color:#fff;padding:52px 0 26px}
+.lock__clock b{display:block;font-size:66px;font-weight:300;letter-spacing:-.02em;line-height:1}
+.lock__clock span{font-size:var(--fs-base);opacity:.9}
+
+/* capture / camera coaching */
+.cam{
+  position:relative;flex:1;
+  background:linear-gradient(165deg,#3a3734,#56504a);
+  display:flex;align-items:center;justify-content:center;
+}
+.cam__frame{
+  position:absolute;inset:14% 12%;
+  border:1px solid rgba(255,255,255,.85);
+}
+.cam__frame::before,.cam__frame::after{
+  content:"";position:absolute;background:rgba(255,255,255,.85);
+}
+.cam__coach{
+  position:absolute;left:0;right:0;bottom:92px;
+  text-align:center;color:#fff;
+}
+.cam__coach b{
+  display:inline-block;background:rgba(0,0,0,.62);
+  padding:8px 14px;font-size:var(--fs-micro);
+  letter-spacing:var(--tr-mid);text-transform:uppercase;font-weight:400;
+}
+.cam__coach p{margin:10px auto 0;max-width:260px;font-size:var(--fs-micro);opacity:.86;line-height:1.5}
+.cam__shutter{
+  position:absolute;bottom:22px;left:50%;transform:translateX(-50%);
+  width:56px;height:56px;border-radius:50%;
+  border:3px solid #fff;background:rgba(255,255,255,.22);
+}
+.cam__steps{position:absolute;top:16px;left:0;right:0;display:flex;gap:5px;justify-content:center}
+.cam__steps i{width:26px;height:2px;background:rgba(255,255,255,.35)}
+.cam__steps i.on{background:#fff}
+
+/* step progress (seller flow) */
+.steps{display:flex;gap:4px;padding:0 18px 14px}
+.steps i{flex:1;height:2px;background:var(--grey-200)}
+.steps i.on{background:var(--black)}
+
+/* generic app list row */
+.row{display:grid;grid-template-columns:62px 1fr auto;gap:13px;align-items:center;padding:14px 0;border-bottom:1px solid var(--grey-200)}
+.row__media{aspect-ratio:2/3;background:var(--grey-100);overflow:hidden}
+.row__media img,.row__media .ph{width:100%;height:100%;object-fit:cover}
+.row__t{font-size:var(--fs-micro);letter-spacing:var(--tr-tight);line-height:1.4}
+.row__s{font-size:var(--fs-nano);color:var(--grey-500);margin-top:4px;line-height:1.5}
+.row__a{font-size:var(--fs-nano);letter-spacing:var(--tr-wide);text-transform:uppercase;white-space:nowrap}
+
+/* demand badge — "3 people want this" */
+.demand{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--black);color:var(--white);
+  padding:4px 8px;font-size:9px;letter-spacing:var(--tr-wide);text-transform:uppercase;
+}
+
+/* big stat / offer */
+.offer{text-align:center;padding:26px 0 18px}
+.offer__tier{font-size:var(--fs-nano);letter-spacing:var(--tr-wide);text-transform:uppercase;color:var(--grey-500)}
+.offer__amt{font-family:var(--sans);font-size:44px;font-weight:300;letter-spacing:-.02em;margin:8px 0 4px;line-height:1}
+.offer__sub{font-size:var(--fs-micro);color:var(--grey-500)}
+
+/* status tracker */
+.track{display:grid;gap:0;margin:6px 0}
+.track__n{display:grid;grid-template-columns:18px 1fr;gap:12px;position:relative;padding-bottom:20px}
+.track__n::before{content:"";position:absolute;left:8px;top:16px;bottom:0;width:1px;background:var(--grey-200)}
+.track__n:last-child{padding-bottom:0}
+.track__n:last-child::before{display:none}
+.track__d{width:11px;height:11px;border-radius:50%;border:1px solid var(--grey-300);background:var(--white);margin:3px 0 0 3px}
+.track__n.done .track__d{background:var(--black);border-color:var(--black)}
+.track__n.now .track__d{border-color:var(--black);box-shadow:inset 0 0 0 2px var(--white),inset 0 0 0 11px var(--black)}
+.track__t{font-size:var(--fs-micro);letter-spacing:var(--tr-tight)}
+.track__s{font-size:var(--fs-nano);color:var(--grey-500);margin-top:3px}
+.track__n:not(.done):not(.now) .track__t{color:var(--grey-400)}
+
+/* =========================================================================
+   IMAGE PLACEHOLDERS — generated, not scraped.
+   Soft editorial tones so the grid reads like a lookbook.
+   ========================================================================= */
+.ph{background:var(--grey-100);position:relative;overflow:hidden}
+.ph--a{background:linear-gradient(168deg,#d8d2c8,#b9b1a4)}
+.ph--b{background:linear-gradient(168deg,#cfd3d6,#a9afb4)}
+.ph--c{background:linear-gradient(168deg,#e3dcd3,#cabfb1)}
+.ph--d{background:linear-gradient(168deg,#2f2e2c,#4f4b45)}
+.ph--e{background:linear-gradient(168deg,#e8e4de,#d2cbc0)}
+.ph--f{background:linear-gradient(168deg,#c4c8c2,#9fa59c)}
+.ph--g{background:linear-gradient(168deg,#ded5cc,#bdb0a2)}
+.ph--h{background:linear-gradient(168deg,#b9bec4,#8f959c)}
+
+/* =========================================================================
+   WALKTHROUGH SHELL (presenter chrome — not part of the Zara UI)
+   ========================================================================= */
+.wt{
+  position:fixed;left:0;right:0;bottom:0;z-index:200;
+  background:#0f0f0f;color:#fff;
+  display:flex;align-items:center;gap:16px;
+  padding:9px 16px;
+}
+.wt a,.wt span{font-size:var(--fs-nano);letter-spacing:var(--tr-wide);text-transform:uppercase}
+.wt__step{color:#8f8f8f}
+.wt__spacer{flex:1}
+.wt__nav{display:flex;gap:10px;align-items:center}
+.wt__nav a{border:1px solid #3a3a3a;padding:6px 12px}
+.wt__nav a:hover{border-color:#fff}
+.wt__side{color:#8f8f8f;max-width:46ch;line-height:1.5;text-transform:none;letter-spacing:.01em;font-size:var(--fs-nano)}
+body.has-wt{padding-bottom:44px}
+
+/* index / contents page */
+.ix{max-width:1080px;margin:0 auto;padding:56px 24px 120px}
+.ix h1{font-family:var(--display);font-weight:400;font-size:40px;letter-spacing:-.01em;margin:0 0 10px}
+.ix__lede{font-size:var(--fs-mid);color:var(--grey-700);max-width:62ch;line-height:1.7;margin:0 0 42px}
+.ix__group{margin-bottom:40px}
+.ix__group h2{font-size:var(--fs-micro);letter-spacing:var(--tr-wide);text-transform:uppercase;margin:0 0 4px;padding-bottom:12px;border-bottom:1px solid var(--grey-200)}
+.ix__item{display:grid;grid-template-columns:34px 1fr auto;gap:16px;align-items:baseline;padding:15px 0;border-bottom:1px solid var(--grey-200)}
+.ix__item:hover{background:var(--grey-050)}
+.ix__num{font-size:var(--fs-nano);color:var(--grey-400);letter-spacing:var(--tr-tight)}
+.ix__t{font-size:var(--fs-base);letter-spacing:var(--tr-tight)}
+.ix__d{font-size:var(--fs-micro);color:var(--grey-500);margin-top:4px;line-height:1.6;max-width:72ch}
+.ix__go{font-size:var(--fs-nano);letter-spacing:var(--tr-wide);text-transform:uppercase;color:var(--grey-400)}
+.ix__item:hover .ix__go{color:var(--black)}
+
+/* annotation callouts for the deck */
+.note{
+  border-left:2px solid var(--black);
+  background:var(--reloop-wash);
+  padding:13px 16px;margin:20px 0;
+  font-size:var(--fs-micro);line-height:1.65;color:var(--grey-900);max-width:70ch;
+}
+.note b{letter-spacing:var(--tr-wide);text-transform:uppercase;font-size:var(--fs-nano);display:block;margin-bottom:5px}
+
+@media (max-width:1100px){
+  .pdp{grid-template-columns:1fr}
+  .pdp__panel{position:static;padding:24px}
+  .grid--4{grid-template-columns:repeat(2,1fr)}
+  .grid--3{grid-template-columns:repeat(2,1fr)}
+  .footer-cols{grid-template-columns:repeat(2,1fr)}
+}
+
+/* =========================================================================
+   PAGE-SPECIFIC
+   ========================================================================= */
+
+/* --- homepage: one screen, two full-bleed panes, wordmark over the photo --- */
+.hp{display:grid;grid-template-columns:1fr 1fr;gap:0;height:calc(100vh - var(--header-h) - 44px);min-height:520px;position:relative}
+.hp__pane{position:relative;overflow:hidden;display:block}
+.hp__media,.hp__media img,.hp__media .ph{width:100%;height:100%;object-fit:cover}
+.hp__mark{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scaleX(.82);
+  font-size:clamp(48px,7vw,104px);color:var(--white);mix-blend-mode:difference;
+}
+.hp__rail{position:absolute;left:24px;bottom:18px;display:flex;gap:18px}
+.hp__switch{font-size:var(--fs-base);font-weight:var(--w-light);letter-spacing:.06em;text-transform:uppercase;color:var(--grey-400)}
+.hp__switch[aria-current]{color:var(--black)}
+.hp__arrows{position:absolute;right:24px;bottom:14px;display:flex;gap:16px;font-size:20px;color:var(--grey-400)}
+
+/* --- PLP density control --- */
+.plp-view{display:flex;gap:10px;align-items:center;padding:18px 24px 0}
+.plp-view span,.plp-view button{font-size:var(--fs-base);font-weight:var(--w-light);letter-spacing:.06em;text-transform:uppercase;color:var(--grey-400)}
+.plp-view button[aria-current]{color:var(--black)}
+
+/* --- PDP extras --- */
+.pdp__desc{font-size:var(--fs-small);color:var(--grey-700);line-height:1.7;margin:26px 0 24px;max-width:44ch}
+.pdp__shot{position:relative}
+.shot-tag{
+  position:absolute;left:10px;bottom:10px;background:rgba(255,255,255,.94);
+  padding:5px 8px;font-size:var(--fs-nano);letter-spacing:var(--tr-wide);text-transform:uppercase;
+}
+.sheet__lede{font-size:var(--fs-small);line-height:1.6;margin:0 0 6px}
+.sheet__ask{margin-top:26px;padding:20px;background:var(--reloop-wash)}
+.sheet__ask .u-label{margin:0 0 6px}
+.sheet__ask .u-meta{display:block;margin-bottom:16px;line-height:1.6}
+
+/* --- grade block --- */
+.grade{margin:22px 0 4px;padding:18px;background:var(--grey-050)}
+.grade__top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.grade__foot{display:block;margin-top:12px;line-height:1.6}
+.facts-list{margin:22px 0 0;border-top:1px solid var(--grey-200)}
+.facts-list li{display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--grey-200);font-size:var(--fs-micro)}
+.facts-list span{color:var(--grey-500)}
+.facts-list b{font-weight:var(--w-reg)}
+
+/* --- pre-owned landing --- */
+.po-hero{padding:34px 24px 26px;background:var(--reloop-wash)}
+.po-hero__h{font-family:var(--display);font-weight:400;font-size:26px;line-height:1.35;margin:8px 0 18px;max-width:30ch}
+.po-pillars{display:flex;gap:20px}
+.po-pillars a{font-size:var(--fs-base);letter-spacing:.06em;text-transform:uppercase;color:var(--grey-400);padding-bottom:3px;border-bottom:1px solid transparent}
+.po-pillars a[aria-current]{color:var(--black);border-bottom-color:var(--black)}
+.po-filters{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:0 24px 18px}
+.chip{display:inline-flex;align-items:center;border:1px solid var(--grey-300);padding:7px 12px;font-size:var(--fs-nano);letter-spacing:var(--tr-wide);text-transform:uppercase}
+.chip.is-on{border-color:var(--black)}
+.po-filters__note{margin-left:8px}
+
+/* --- bag --- */
+.bag{padding:10px 24px 0;max-width:1100px}
+.bag__h{display:block;margin-bottom:22px}
+.bag__grid{display:grid;grid-template-columns:1fr 320px;gap:48px;align-items:start}
+.bag__item{display:grid;grid-template-columns:104px 1fr auto;gap:18px;padding-bottom:22px;border-bottom:1px solid var(--grey-200)}
+.bag__media{aspect-ratio:2/3;background:var(--grey-100);overflow:hidden}
+.bag__media img,.bag__media .ph{width:100%;height:100%;object-fit:cover}
+.bag__name{font-size:var(--fs-small);letter-spacing:var(--tr-tight);margin:6px 0 4px}
+.bag__meta .u-meta{display:block;margin-bottom:2px}
+.bag__links{margin-top:10px}
+.bag__price{font-size:var(--fs-small)}
+.bag__sum{border:1px solid var(--grey-200);padding:22px}
+.sum{margin:16px 0 0}
+.sum li{display:flex;justify-content:space-between;padding:8px 0;font-size:var(--fs-micro);color:var(--grey-700)}
+.sum b{font-weight:var(--w-reg);color:var(--black)}
+.sum__total{display:flex;justify-content:space-between;padding:14px 0;margin-top:6px;border-top:1px solid var(--grey-200);font-size:var(--fs-small)}
+.sum__total span{letter-spacing:var(--tr-wide)}
+.sum__note{display:block;margin:4px 0 18px;line-height:1.6}
+
+/* --- narrow editorial pages --- */
+.narrow{max-width:720px;margin:0 auto;padding:48px 24px 40px}
+.narrow--wide{max-width:900px}
+.big{font-family:var(--display);font-weight:400;font-size:30px;line-height:1.2;letter-spacing:-.01em;margin:10px 0 16px}
+.lede{font-size:var(--fs-base);color:var(--grey-700);line-height:1.7;margin:0 0 22px;max-width:62ch}
+.facts{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;padding:22px 0;border-top:1px solid var(--grey-200);border-bottom:1px solid var(--grey-200);margin-bottom:12px}
+.facts p{margin:6px 0 0;font-size:var(--fs-small)}
+
+/* --- stage for phone screens --- */
+.stage__intro{max-width:760px;margin:0 auto;padding:26px 24px 4px;text-align:center}
+.stage__intro .lede{margin-left:auto;margin-right:auto}
+.stage .note{max-width:760px;margin-left:auto;margin-right:auto}
+.cam__shot{position:absolute;inset:0}
+.cam__shot img,.cam__shot .ph{width:100%;height:100%;object-fit:cover}
+.app-body--center{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.spinner{width:34px;height:34px;border:1px solid var(--grey-200);border-top-color:var(--black);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ticks{margin-top:18px;text-align:left}
+.ticks li{font-size:var(--fs-micro);color:var(--grey-400);padding:5px 0 5px 20px;position:relative}
+.ticks li.done{color:var(--black)}
+.ticks li.done::before{content:"\2713";position:absolute;left:0}
+.foot-row{display:flex;justify-content:space-between;padding-top:4px}
+.choices{margin:16px 0 20px}
+.choice{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--grey-200);font-size:var(--fs-micro)}
+.choice i{width:13px;height:13px;border:1px solid var(--grey-300);border-radius:50%}
+.choice.is-on i{background:var(--black);border-color:var(--black);box-shadow:inset 0 0 0 2px #fff}
+.uploader{display:flex;align-items:center;justify-content:space-between;border:1px dashed var(--grey-300);padding:18px 14px;margin-bottom:16px}
+.uploader__plus{font-size:17px;color:var(--grey-400)}
+.opt{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;border:1px solid var(--grey-200);padding:15px;margin-bottom:10px}
+.opt.is-on{border-color:var(--black)}
+.opt__t{font-size:var(--fs-micro);letter-spacing:var(--tr-tight)}
+.opt__s{font-size:var(--fs-nano);color:var(--grey-500);line-height:1.6;margin-top:5px}
+.opt i{flex:0 0 13px;width:13px;height:13px;border:1px solid var(--grey-300);border-radius:50%;margin-top:2px}
+.opt.is-on i{background:var(--black);border-color:var(--black);box-shadow:inset 0 0 0 2px #fff}
+.flowmap{margin-top:22px;padding:16px;background:var(--grey-050)}
+.flowmap__l{margin:10px 0 12px;padding:0;list-style:none;counter-reset:f}
+.flowmap__l li{counter-increment:f;font-size:var(--fs-micro);padding:7px 0 7px 22px;position:relative;line-height:1.5}
+.flowmap__l li::before{content:counter(f);position:absolute;left:0;font-size:var(--fs-nano);color:var(--grey-400)}
+.flowmap__l span{display:block;font-size:var(--fs-nano);color:var(--grey-500);margin-top:2px}
+.payout{margin-top:22px;padding:18px;background:var(--reloop-wash);text-align:center}
+.payout__amt{font-size:30px;font-weight:300;margin:8px 0 8px}
+.payout .u-meta{line-height:1.6}
+
+/* --- systems map --- */
+.sys__grid{display:grid;gap:1px;background:var(--grey-200);border:1px solid var(--grey-200);margin:28px 0 0}
+.sys{background:var(--white);display:grid;grid-template-columns:120px 1fr;gap:18px;padding:17px 18px;align-items:start}
+.sys__state{font-size:var(--fs-nano);letter-spacing:var(--tr-wide);text-transform:uppercase;color:var(--grey-400);padding-top:2px}
+.sys.new .sys__state{color:var(--black);font-weight:500}
+.sys.new{background:var(--reloop-wash)}
+.sys__n{font-size:var(--fs-small);letter-spacing:var(--tr-tight)}
+.sys__w{font-size:var(--fs-micro);color:var(--grey-500);line-height:1.6;margin-top:4px}
+.scoreline{display:flex;align-items:baseline;gap:12px;padding:22px 0 4px}
+.scoreline b{font-family:var(--display);font-size:38px;font-weight:400}
+.scoreline span{font-size:var(--fs-micro);letter-spacing:var(--tr-wide);text-transform:uppercase;color:var(--grey-500)}
+
+.ix__foot{margin-top:46px;padding-top:22px;border-top:1px solid var(--grey-200)}
+.ix__foot .u-meta{line-height:1.8;max-width:80ch}
+
+@media (max-width:900px){
+  .bag__grid{grid-template-columns:1fr;gap:28px}
+  .facts{grid-template-columns:repeat(2,1fr)}
+  .hp{grid-template-columns:1fr;height:auto}
+  .hp__pane{aspect-ratio:2/3}
+}
+
+/* iOS-ish status bar glyphs */
+.phone__sig{display:inline-flex;gap:2px;align-items:flex-end}
+.phone__sig i{display:block;width:3px;background:var(--black)}
+.phone__sig i:nth-child(1){height:4px}
+.phone__sig i:nth-child(2){height:6px}
+.phone__sig i:nth-child(3){height:8px}
+.phone__sig i:nth-child(4){height:10px}
+.band__ends span:nth-child(2){color:var(--black);letter-spacing:var(--tr-wide);text-transform:uppercase}
+.ix__t{display:block}
+.ix__d{display:block}
+/* the rail sits over photography, so it needs its own contrast */
+.hp__rail,.hp__arrows{z-index:3;text-shadow:0 1px 6px rgba(0,0,0,.45)}
+.hp__switch{color:rgba(255,255,255,.72)}
+.hp__switch[aria-current]{color:#fff}
+.hp__arrows{color:rgba(255,255,255,.8)}
