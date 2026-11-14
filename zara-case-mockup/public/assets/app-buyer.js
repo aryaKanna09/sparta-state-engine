@@ -206,6 +206,19 @@
       var hit = function (sel) { return t.closest && t.closest(sel); };
 
       if (hit('[data-back]')) return back();
+
+      // The serif row at the top of the menu switches which menu body shows.
+      // PRE-OWNED opens Zara's own services page: Secondhand, Repair, Donate.
+      var cat = hit('[data-cat]');
+      if (cat) {
+        var want = cat.getAttribute('data-cat');
+        $$('.menu__cats button').forEach(function (c) { c.classList.toggle('on', c === cat); });
+        $$('.menu__body').forEach(function (bd) { bd.hidden = bd.id !== 'menu-' + want; });
+        var mb = $('#menu-' + want);
+        if (mb) mb.scrollTop = 0;
+        return;
+      }
+
       if (hit('[data-close]') || t.id === 'sheetbg') return closeSheets();
       if (hit('[data-restart]')) { bag = []; hist = []; paintBagCount(); return go('home', false); }
 

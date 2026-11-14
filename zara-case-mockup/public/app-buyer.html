@@ -46,10 +46,12 @@
       <div class="sbar sbar--light"><span>11:15</span><span class="sbar__r"><span class="sbar__sig"><i></i><i></i><i></i><i></i></span><span class="sbar__bat"></span></span></div>
       <div class="menu">
         <div class="menu__cats">
-          <button class="on">WOMAN</button><button>MAN</button><button>KIDS</button>
-          <button>ZARA HOME</button><button>BEAUTY</button>
+          <button class="on" data-cat="woman">WOMAN</button><button data-cat="woman">MAN</button>
+          <button data-cat="woman">KIDS</button><button data-cat="woman">ZARA HOME</button>
+          <button data-cat="woman">BEAUTY</button><button data-cat="woman">ZARA SRPLS</button>
+          <button data-cat="po">PRE-OWNED</button><button data-cat="woman">TRAVEL MODE</button>
         </div>
-        <div class="menu__body">
+        <div class="menu__body" id="menu-woman">
           <div class="edits">
             <span class="edit"><img src="assets/img/dress.webp" alt=""><span>THE NEW</span></span>
             <span class="edit"><img src="assets/img/skirt.webp" alt=""><span>PARTY</span></span>
@@ -94,6 +96,28 @@
             <li><button data-go="plp">TRAVEL MODE</button></li><li><button>GIFT CARD</button></li>
             <li><button data-go="plp">STORES</button></li><li><button>SUSTAINABILITY</button></li>
             <li><button>CAREERS</button></li><li><button>+ INFO</button></li>
+          </ul>
+        </div>
+
+        <div class="menu__body" id="menu-po" hidden>
+          <div class="edits edits--3">
+            <button class="edit" data-go="polist"><img src="assets/img/po-plaid-1.webp" alt=""><span>SECONDHAND</span></button>
+            <button class="edit" data-go="repair"><img src="assets/img/detail-cuff.webp" alt=""><span>REPAIR</span></button>
+            <button class="edit" data-go="donate"><img src="assets/img/knit.webp" alt=""><span>DONATE</span></button>
+          </div>
+
+          <div class="msec"><button class="msec__n" data-go="polist"><i>01</i> SERVICES</button>
+            <ul class="msec__l">
+              <li><button data-go="polist">ABOUT</button></li>
+              <li><button data-go="repair">REPAIR</button></li>
+              <li><button class="po" data-go="polist">SECOND HAND</button></li>
+              <li><button data-go="donate">DONATE</button></li>
+            </ul></div>
+
+          <ul class="mflat">
+            <li><button data-go="plp">SUSTAINABILITY</button></li>
+            <li><button data-go="plp">CAREERS</button></li>
+            <li><button data-go="plp">STORES</button></li>
           </ul>
         </div>
       </div>
@@ -262,6 +286,59 @@
         </div>
       </div>
       <div class="actionbar"><button class="btn btn--quiet" data-restart>START OVER</button></div>
+      <div class="hind"></div>
+    </section>
+
+
+    <!-- ========================================================== REPAIR -->
+    <section class="view" id="v-repair">
+      <div class="sbar"><span>9:41</span><span class="sbar__r"><span class="sbar__sig"><i></i><i></i><i></i><i></i></span><span class="sbar__bat"></span></span></div>
+      <div class="nav"><button class="nav__b" data-back>&#8249;</button><span class="nav__t">REPAIR</span><span class="nav__r"></span></div>
+      <div class="scroll">
+        <p class="u-met" style="margin:0 0 14px">Repair of used Zara garments from any collection. Button and zip
+          replacement and seam repairs.</p>
+        <button class="opt is-on"><div><div class="opt__t">Request it online</div>
+          <div class="opt__s">Choose the garments and the type of repair. We email a QR code or shipping label so you
+            can drop them at your nearest delivery point.</div></div><i></i></button>
+        <button class="opt"><div><div class="opt__t">Take it to a store</div>
+          <div class="opt__s">Pay in store and collect from the same store. Check the store locator for which stores
+            offer the service.</div></div><i></i></button>
+        <p class="u-eye" style="margin:18px 0 8px">TYPICAL REPAIRS</p>
+        <div class="checks">
+          <div class="check"><span class="check__k">Button replacement</span><span class="check__v">from $3.50</span></div>
+          <div class="check"><span class="check__k">Zip replacement</span><span class="check__v">from $20.00</span></div>
+          <div class="check"><span class="check__k">Seam repair</span><span class="check__v">from $5.00</span></div>
+        </div>
+        <p class="u-met" style="margin-top:10px">Up to 14 days. Prices are indicative and vary by market.</p>
+      </div>
+      <div class="actionbar"><button class="btn btn--pri" data-go="polist">REQUEST A REPAIR</button></div>
+      <div class="hind"></div>
+    </section>
+
+    <!-- ========================================================== DONATE -->
+    <section class="view" id="v-donate">
+      <div class="sbar"><span>9:41</span><span class="sbar__r"><span class="sbar__sig"><i></i><i></i><i></i><i></i></span><span class="sbar__bat"></span></span></div>
+      <div class="nav"><button class="nav__b" data-back>&#8249;</button><span class="nav__t">DONATE</span><span class="nav__r"></span></div>
+      <div class="scroll">
+        <p class="u-met" style="margin:0 0 14px">Drop clothing you no longer wear into the collection container in any
+          Zara store. We accept garments from any brand, not only Zara.</p>
+        <div style="background:rgba(255,255,255,.07);padding:14px;margin-bottom:14px">
+          <p class="u-eye">WHERE IT GOES</p>
+          <p class="u-met" style="margin:5px 0 0">Zara works with more than 90 community organisations, including
+            The Salvation Army in the United States.</p>
+        </div>
+        <div class="row" style="border-top:.5px solid var(--g200)">
+          <div class="row__m"><img src="assets/img/knit.webp" alt=""></div>
+          <div><div class="row__t">Zara SoHo</div><div class="row__s">580 Broadway &middot; 0.4 mi<br>Container by the entrance</div></div>
+          <div class="row__a">OPEN</div>
+        </div>
+        <div class="row">
+          <div class="row__m"><img src="assets/img/mini.webp" alt=""></div>
+          <div><div class="row__t">Zara Fifth Avenue</div><div class="row__s">503 5th Ave &middot; 1.8 mi</div></div>
+          <div class="row__a">OPEN</div>
+        </div>
+      </div>
+      <div class="actionbar"><button class="btn btn--quiet" data-go="menu">FIND A STORE</button></div>
       <div class="hind"></div>
     </section>
 

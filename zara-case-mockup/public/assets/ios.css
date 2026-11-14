@@ -479,3 +479,9 @@ ul,ol{margin:0;padding:0;list-style:none}
 .sizelist-c .srow{justify-content:center;gap:14px;border:0;padding:17px 0}
 .sizelist-c .srow__n{font-size:var(--f15);letter-spacing:.04em}
 .ph{background:#111}
+/* Pre-Owned menu: three service tiles across */
+.edits--3{gap:4px}
+.edits--3 .edit{flex:1 1 0;min-width:0}
+.edits--3 .edit img{width:100%;height:150px;object-fit:cover}
+.edits--3 .edit span{font-size:var(--f10);letter-spacing:var(--tr-w);text-transform:uppercase}
+.edit{display:block;text-align:left;padding:0}
