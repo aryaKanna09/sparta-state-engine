@@ -136,12 +136,17 @@
             <span class="sw"><i style="background:#1e1e1e"></i></span>
             <span class="sw"><i style="background:#d8cfc2"></i></span>
           </div>
-          <p class="pdesc" id="pdp-desc">Regular-fit blazer with a lapel collar, long sleeves, front welt pockets and frayed trims.</p>
-          <div class="acc">
-            <button class="acc__r"><span class="u-lab">COMPOSITION AND CARE</span><span>+</span></button>
-            <button class="acc__r"><span class="u-lab">SHIPPING AND RETURNS</span><span>+</span></button>
-            <button class="acc__r"><span class="u-lab">JOIN LIFE</span><span>+</span></button>
+          <p class="u-eye" style="margin-top:18px">COMPLETE YOUR LOOK</p>
+          <div class="strip">
+            <figure><img src="assets/img/mini.webp" alt=""><figcaption>$ 45.90</figcaption><span class="plus">+</span></figure>
+            <figure><img src="assets/img/knit.webp" alt=""><figcaption>$ 49.90</figcaption><span class="plus">+</span></figure>
+            <figure><img src="assets/img/black.webp" alt=""><figcaption>$ 45.90</figcaption><span class="plus">+</span></figure>
           </div>
+          <div class="tabs">
+            <button aria-current="page">DESCRIPTION</button><button>CONTENTS</button><button>MEASUREMENTS</button>
+          </div>
+          <p class="pdesc" id="pdp-desc">Regular-fit blazer with a lapel collar, long sleeves, front welt pockets and frayed trims.</p>
+          <p class="pref" style="margin-top:14px" id="pdp-ref2">BLUE | 2757/397/403 &#128203;</p>
         </div>
       </div>
       <!-- pre-owned is a standing option, not a consolation prize -->
@@ -170,7 +175,7 @@
           <p class="pprice"><span id="po-price">$82.00</span> <span class="u-str" id="po-was">$109.00</span></p>
           <p class="pref" id="po-ref">Blue 2757/397/403 · Size M</p>
 
-          <div style="background:#f4f3f1;padding:14px;margin:16px 0">
+          <div style="background:rgba(255,255,255,.07);padding:14px;margin:16px 0">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
               <span class="unit__t"><span class="dot" id="po-dot"></span><span id="po-tier"></span></span>
               <span class="link">How we grade</span>
@@ -230,10 +235,11 @@
             <li><span>Shipping</span><b data-ship>$4.95</b></li>
           </ul>
           <div class="sumtot"><span>TOTAL</span><b data-total>$0.00</b></div>
+          <p class="u-met" style="margin-top:4px">* Tax not included</p>
           <p class="u-met" data-feenote hidden>$1.00 plus 5% of the item price, as on Zara Resell today. The seller receives their full asking price.</p>
         </div>
       </div>
-      <div class="actionbar"><button class="btn btn--pri" id="bagcta" data-go="done">CONTINUE</button></div>
+      <div class="actionbar"><button class="btn btn--cta" id="bagcta" data-go="done">CONTINUE</button></div>
       <div class="hind"></div>
     </section>
 
@@ -245,7 +251,7 @@
         <div style="font-size:38px">&#10003;</div>
         <h2 style="font-family:var(--display);font-weight:400;font-size:23px;margin:12px 0 8px">Thank you.</h2>
         <p class="u-met" style="max-width:29ch" id="done-sub"></p>
-        <div style="background:#f4f3f1;padding:14px;margin-top:20px;text-align:left">
+        <div style="background:rgba(255,255,255,.07);padding:14px;margin-top:20px;text-align:left">
           <p class="u-eye">WHAT HAPPENS NOW</p>
           <p class="u-met" style="margin:6px 0 0">The person who listed this gets a notification on their phone, and
             sends it in the way they already chose — drop-off at their Zara store, or a prepaid label. Zara confirms
@@ -263,9 +269,9 @@
       <div class="sheet__grab"></div>
       <div class="sheet__h"><span class="u-lab">SELECT SIZE</span><button class="sheet__x" data-close>&times;</button></div>
       <div class="sheet__b">
-        <div class="sizes" id="sizelist"></div>
-        <p class="u-met" style="margin-top:12px"><u>See measurements</u> · <u>Find your size</u></p>
-        <p class="u-met">Check in-store availability</p>
+        <div class="sizes sizelist-c" id="sizelist"></div>
+        <p class="u-lab" style="text-align:center;margin:10px 0 4px">SIZE RECOMMENDER</p>
+        <p class="u-met" style="text-align:center">Check in-store availability</p>
         <button class="btn btn--pri" style="margin-top:12px" data-add-new>ADD TO BAG</button>
       </div>
     </div>
@@ -276,7 +282,7 @@
       <div class="sheet__b">
         <p class="u-met" style="margin:0 0 4px" id="posheet-sub"></p>
         <div id="units"></div>
-        <div style="background:#f4f3f1;padding:13px;margin-top:14px">
+        <div style="background:rgba(255,255,255,.07);padding:13px;margin-top:14px">
           <p class="u-met" style="margin:0">Every listing is a garment someone already owns. Zara grades it, sets the
             price band and handles the logistics — the seller never writes a listing.</p>
         </div>

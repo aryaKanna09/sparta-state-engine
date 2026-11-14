@@ -178,7 +178,7 @@
       '<div class="track__s">They scan the code in this screen. Nothing to print.</div></div></li>',
       '<li class="track__n"><div class="track__d"></div><div><div class="track__t">They confirm the grade and send it</div>',
       '<div class="track__s">The store ships it to the buyer on ship-from-store.</div></div></li></ol>',
-      '<div style="background:#f4f3f1;padding:13px;margin-top:14px"><p class="u-eye">WHY THIS MATTERS</p>',
+      '<div style="background:rgba(255,255,255,.07);padding:13px;margin-top:14px"><p class="u-eye">WHY THIS MATTERS</p>',
       '<p class="u-met" style="margin:5px 0 0">Today you would package this yourself and post it within three days,',
       ' and Zara would never touch it — which is why it cannot guarantee condition and why all sales are final.',
       ' A staff member confirming the grade is what turns your claim into Zara\'s guarantee.</p></div>'

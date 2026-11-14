@@ -6,9 +6,12 @@
    ========================================================================= */
 
 :root{
+  /* The Zara app runs dark: black ground, white type, hairlines in white at
+     low alpha. The Pre-Owned webview is light — that mismatch is the point. */
   --black:#000; --white:#fff;
-  --g900:#1c1c1e; --g700:#555; --g500:#767676; --g400:#8e8e93;
-  --g300:#c7c7cc; --g200:#e5e5ea; --g100:#f2f2f7; --g050:#fafafa;
+  --g900:#e9e9e9; --g700:#b4b4b4; --g500:#8e8e8e; --g400:#6f6f6f;
+  --g300:rgba(255,255,255,.26); --g200:rgba(255,255,255,.16);
+  --g100:#141414; --g050:#0d0d0d;
   --tint:#000;
   --ok:#2d4a35; --warn:#8a6d3b;
   --tier-e:#2d4a35; --tier-g:#4a5a6b; --tier-f:#7a6a52;
@@ -29,9 +32,9 @@
 *,*::before,*::after{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{
-  margin:0;background:#8e8e93;
+  margin:0;background:#161616;
   font-family:var(--sans);font-size:var(--f13);font-weight:var(--w3);
-  color:var(--black);line-height:1.45;
+  color:var(--white);line-height:1.45;
   -webkit-font-smoothing:antialiased;
 }
 img{display:block;max-width:100%}
@@ -62,16 +65,17 @@ ul,ol{margin:0;padding:0;list-style:none}
 }
 .iphone__screen{
   position:relative;width:100%;height:100%;overflow:hidden;
-  border-radius:43px;background:var(--white);
+  border-radius:43px;background:#000;
   display:flex;flex-direction:column;
 }
 
 /* status bar, drawn over content */
+
 .sbar{
   position:absolute;top:0;left:0;right:0;height:var(--sb);z-index:40;
   display:flex;align-items:flex-end;justify-content:space-between;
   padding:0 30px 6px;pointer-events:none;
-  font-size:14px;font-weight:600;letter-spacing:-.01em;color:var(--black);
+  font-size:14px;font-weight:600;letter-spacing:-.01em;color:#fff;
 }
 .sbar--light{color:#fff}
 .sbar__r{display:flex;align-items:center;gap:5px}
@@ -90,21 +94,21 @@ ul,ol{margin:0;padding:0;list-style:none}
 /* home indicator */
 .hind{
   position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
-  width:138px;height:5px;border-radius:3px;background:#000;opacity:.3;z-index:46;pointer-events:none;
+  width:138px;height:5px;border-radius:3px;background:#fff;opacity:.55;z-index:46;pointer-events:none;
 }
 .hind--light{background:#fff;opacity:.7}
 
 /* ====================================================================
    APP CHROME
    ==================================================================== */
-.view{position:absolute;inset:0;display:none;flex-direction:column;background:var(--white)}
+.view{position:absolute;inset:0;display:none;flex-direction:column;background:#000}
 .view.is-on{display:flex}
 
 /* translucent nav bar */
 .nav{
   flex:0 0 auto;padding:calc(var(--sb) + 2px) 16px 10px;
   display:grid;grid-template-columns:44px 1fr 44px;align-items:center;
-  background:rgba(255,255,255,.94);backdrop-filter:saturate(180%) blur(18px);
+  background:rgba(0,0,0,.92);backdrop-filter:saturate(180%) blur(18px);
   border-bottom:.5px solid var(--g200);z-index:30;
 }
 .nav--bare{background:transparent;border-bottom:0;position:absolute;left:0;right:0;top:0}
@@ -136,7 +140,7 @@ ul,ol{margin:0;padding:0;list-style:none}
 /* sticky action bar (PDP) */
 .actionbar{
   flex:0 0 auto;padding:10px 16px calc(var(--hi) + 6px);
-  background:rgba(255,255,255,.97);backdrop-filter:blur(18px);
+  background:rgba(0,0,0,.95);backdrop-filter:blur(18px);
   border-top:.5px solid var(--g200);display:grid;gap:8px;z-index:30;
 }
 
@@ -148,10 +152,10 @@ ul,ol{margin:0;padding:0;list-style:none}
   transition:opacity .15s,background .15s;
 }
 .btn:active{opacity:.75}
-.btn--pri{background:var(--black);color:#fff}
-.btn--sec{background:#fff;color:#000;border:1px solid #000}
-.btn--quiet{background:#fff;color:#000;border:.5px solid var(--g300)}
-.btn--off{background:var(--g100);color:var(--g400)}
+.btn--pri{background:transparent;color:#fff;border:1px solid #fff}
+.btn--sec{background:#fff;color:#000;border:1px solid #fff}
+.btn--quiet{background:transparent;color:#fff;border:.5px solid var(--g300)}
+.btn--off{background:transparent;color:var(--g400);border:1px solid var(--g200)}
 .btn--sm{min-height:38px;font-size:var(--f10)}
 .link{font-size:var(--f11);text-decoration:underline;text-underline-offset:3px;letter-spacing:var(--tr-t)}
 
@@ -171,10 +175,10 @@ ul,ol{margin:0;padding:0;list-style:none}
 
 /* product grid, 2 up, 2:3 */
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:2px}
-.tile{position:relative;background:var(--g100)}
+.tile{position:relative;background:#0d0d0d}
 .tile__m{aspect-ratio:2/3;overflow:hidden;position:relative}
 .tile__m img,.tile__m .ph{width:100%;height:100%;object-fit:cover}
-.tile__i{padding:7px 8px 14px;background:#fff}
+.tile__i{padding:7px 8px 14px;background:#000}
 .tile__n{font-size:var(--f11);letter-spacing:var(--tr-t);line-height:1.35}
 .tile__p{font-size:var(--f11);margin-top:2px}
 .tile__flag{position:absolute;top:8px;left:8px;background:#000;color:#fff;
@@ -211,7 +215,7 @@ ul,ol{margin:0;padding:0;list-style:none}
 .sheet-bg.is-on{opacity:1;pointer-events:auto}
 .sheet{
   position:absolute;left:0;right:0;bottom:0;z-index:51;
-  background:#fff;border-radius:14px 14px 0 0;
+  background:#0a0a0a;border-radius:14px 14px 0 0;
   transform:translateY(100%);transition:transform .3s cubic-bezier(.32,.72,0,1);pointer-events:none;
   max-height:84%;display:flex;flex-direction:column;
 }
@@ -234,13 +238,13 @@ ul,ol{margin:0;padding:0;list-style:none}
 .srow.is-sel .srow__n{font-weight:var(--w5)}
 .srow.is-out .srow__n{color:var(--g300)}
 .srow__sim{font-size:var(--f10);letter-spacing:var(--tr-w);text-transform:uppercase;color:var(--g500);text-decoration:underline;text-underline-offset:3px}
-.srow.is-out.has-alt{background:#f4f3f1}
+.srow.is-out.has-alt{background:rgba(255,255,255,.07)}
 .srow__alt{
   display:inline-flex;align-items:center;gap:6px;font-size:var(--f10);
-  letter-spacing:var(--tr-w);text-transform:uppercase;color:#000;
-  border-bottom:1px solid #000;padding-bottom:2px;
+  letter-spacing:var(--tr-w);text-transform:uppercase;color:#fff;
+  border-bottom:1px solid #fff;padding-bottom:2px;
 }
-.srow__alt::before{content:"";width:6px;height:6px;border-radius:50%;background:#000}
+.srow__alt::before{content:"";width:6px;height:6px;border-radius:50%;background:#fff}
 
 /* ====================================================================
    PRE-OWNED
@@ -255,7 +259,7 @@ ul,ol{margin:0;padding:0;list-style:none}
 .dot--e{background:var(--tier-e)}.dot--g{background:var(--tier-g)}.dot--f{background:var(--tier-f)}
 
 .checks{display:grid;gap:.5px;background:var(--g200);border:.5px solid var(--g200)}
-.check{background:#fff;padding:12px 13px;display:flex;justify-content:space-between;align-items:center}
+.check{background:#0f0f0f;padding:12px 13px;display:flex;justify-content:space-between;align-items:center}
 .check__k{font-size:var(--f11)}
 .check__v{font-size:var(--f9);letter-spacing:var(--tr-w);text-transform:uppercase;color:var(--g700)}
 
@@ -358,7 +362,7 @@ ul,ol{margin:0;padding:0;list-style:none}
 .track__s{font-size:var(--f10);color:var(--g500);margin-top:2px}
 .track__n:not(.done):not(.now) .track__t{color:var(--g400)}
 
-.payout{margin-top:18px;padding:16px;background:#f4f3f1;text-align:center}
+.payout{margin-top:18px;padding:16px;background:#111;text-align:center}
 .payout__a{font-size:28px;font-weight:200;margin:6px 0}
 
 /* bag */
@@ -372,7 +376,7 @@ ul,ol{margin:0;padding:0;list-style:none}
 
 /* toast inside the phone */
 .toast{position:absolute;left:16px;right:16px;bottom:calc(var(--hi) + 72px);z-index:60;
-  background:#000;color:#fff;padding:12px 16px;font-size:var(--f11);
+  background:#fff;color:#000;padding:12px 16px;font-size:var(--f11);
   letter-spacing:var(--tr-m);text-transform:uppercase;text-align:center;
   opacity:0;transform:translateY(10px);transition:.25s;pointer-events:none}
 .toast.is-on{opacity:1;transform:translateY(0)}
@@ -450,3 +454,23 @@ ul,ol{margin:0;padding:0;list-style:none}
   width:28px;height:28px;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;
 }
 .arrow--l{left:10px}.arrow--r{right:10px}
+
+/* ---- corrections from real PDP / bag screenshots ---- */
+.btn--cta{background:#fff;color:#000;border:0}          /* CONTINUE is solid white */
+.price{font-size:var(--f13)}                             /* Zara writes "$ 169.00" */
+.tabs{display:flex;gap:22px;padding:16px 0 4px}
+.tabs button{font-size:var(--f12);letter-spacing:.06em;text-transform:uppercase;color:var(--g500)}
+.tabs button[aria-current]{color:#fff;font-weight:var(--w5)}
+.bagtabs{display:flex;gap:20px;padding:10px 16px 14px;align-items:center;flex-wrap:wrap}
+.bagtabs button{font-size:var(--f12);letter-spacing:.05em;text-transform:uppercase;color:var(--g500)}
+.bagtabs button[aria-current]{color:#fff;font-weight:var(--w5)}
+.strip{display:flex;gap:9px;overflow-x:auto;padding:10px 0 2px;scrollbar-width:none}
+.strip::-webkit-scrollbar{display:none}
+.strip figure{flex:0 0 102px;margin:0}
+.strip img{width:102px;height:150px;object-fit:cover;background:#111}
+.strip figcaption{font-size:var(--f11);margin-top:7px;color:#fff}
+.strip .plus{display:block;margin-top:5px;font-size:15px;color:#fff}
+.sizelist-c{padding:10px 0 4px}
+.sizelist-c .srow{justify-content:center;gap:14px;border:0;padding:17px 0}
+.sizelist-c .srow__n{font-size:var(--f15);letter-spacing:.04em}
+.ph{background:#111}
