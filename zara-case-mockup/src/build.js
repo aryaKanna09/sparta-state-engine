@@ -80,10 +80,12 @@ function build() {
     fs.writeFileSync(path.join(OUT, p.file), html);
   });
 
-  // contents page
+  // The iOS apps are the deliverable, so index.html is their launcher
+  // (written by hand as app-index.html). The old website walkthrough keeps
+  // its contents page at web-index.html.
   fs.writeFileSync(
-    path.join(OUT, 'index.html'),
-    L.doc({ title: 'ZARA RELOOP — Team Fireworks', body: meta.index(steps) })
+    path.join(OUT, 'web-index.html'),
+    L.doc({ title: 'ZARA RELOOP — website walkthrough', body: meta.index(steps) })
   );
 
   // favicon: the wordmark Z
