@@ -65,10 +65,10 @@ ${phTemplates()}`;
 function pdp({ sheet = false } = {}) {
   const sizeRow = (z) => {
     if (z.state === 'in') {
-      return `<button class="size-row"><span class="size-row__name">${z.s}</span></button>`;
+      return `<button class="size-row" data-size="${z.s}"><span class="size-row__name">${z.s}</span></button>`;
     }
     if (z.state === 'soon') {
-      return `<button class="size-row"><span class="size-row__name">${z.s}</span>
+      return `<button class="size-row is-soon"><span class="size-row__name">${z.s}</span>
         <span class="size-row__meta">${COPY.comingSoon}</span></button>`;
     }
     // SOLD OUT — struck through, and this is where we intervene.
@@ -85,7 +85,8 @@ ${header({ nav: 'WOMAN' })}
     ${HERO.gallery.map((g, i) => `<div class="pdp__shot${i === 2 ? ' pdp__shot--tall' : ''}">${pic(g, HERO.ph, HERO.name)}</div>`).join('')}
   </div>
 
-  <aside class="pdp__panel">
+  <aside class="pdp__panel" data-pdp data-name="${HERO.name}" data-colour="${HERO.colour}"
+    data-price="${HERO.price}" data-img="${HERO.img}" data-ph="${HERO.ph}">
     <h1 class="pdp__name">${HERO.name} - ${HERO.colour}</h1>
     <p class="pdp__price">${money(HERO.price)}</p>
     <p class="pdp__ref">${HERO.colour} ${HERO.ref}</p>
@@ -104,7 +105,8 @@ ${header({ nav: 'WOMAN' })}
     </div>
 
     <div class="pdp__actions">
-      <button class="btn btn--primary btn--block">${COPY.addToBag}</button>
+      <button class="btn btn--primary btn--block btn--disabled" data-add>${COPY.addToBag}</button>
+      <p class="u-meta size-hint" data-size-hint></p>
     </div>
 
     <p class="pdp__desc">${HERO.desc}</p>
@@ -217,7 +219,10 @@ ${header({ nav: 'PRE-OWNED' })}
     </div>
   </div>
 
-  <aside class="pdp__panel">
+  <aside class="pdp__panel" data-pdp data-needs-size="false" data-preowned="true"
+    data-name="${HERO.name}" data-colour="${HERO.colour}" data-price="${u.price}"
+    data-img="${u.img}" data-ph="${u.ph}" data-size-fixed="M" data-tier="${t.code}"
+    data-seller="${u.seller}" data-eta="${u.eta}">
     <p class="u-eyebrow">${COPY.programme}</p>
     <h1 class="pdp__name">${HERO.name} - ${HERO.colour}</h1>
     <p class="pdp__price">${money(u.price)} <span class="u-strike">${money(HERO.price)}</span></p>
@@ -236,7 +241,7 @@ ${header({ nav: 'PRE-OWNED' })}
     </div>
 
     <div class="pdp__actions">
-      <button class="btn btn--primary btn--block">${COPY.addToBag}</button>
+      <button class="btn btn--primary btn--block" data-add>${COPY.addToBag}</button>
     </div>
 
     <ul class="facts-list">
@@ -301,7 +306,7 @@ ${header({ nav: 'PRE-OWNED' })}
 </div>
 <div class="po-filters">
   <span class="u-eyebrow">CONDITION</span>
-  ${TIERS.map((t, i) => `<button class="chip${i === 0 ? ' is-on' : ''}"><span class="tierdot tierdot--${t.key}"></span>${t.code}</button>`).join('')}
+  ${TIERS.map((t, i) => `<button class="chip"><span class="tierdot tierdot--${t.key}"></span>${t.code}</button>`).join('')}
   <span class="po-filters__note u-meta">Zara's live catalogue cannot be filtered by condition. Grading makes it possible.</span>
 </div>
 <main class="grid grid--4">${rows.map(card).join('')}</main>
@@ -313,40 +318,27 @@ ${phTemplates()}`;
    BAG — the real Zara Resell fee structure: the BUYER pays $1 + 5%.
    ====================================================================== */
 function bag() {
-  const u = UNITS[0];
-  const fee = COPY.buyerFeeFlat + u.price * COPY.buyerFeePct;
-  const ship = 4.95;
   return `
-${header({ nav: 'WOMAN', bagCount: 1 })}
+${header({ nav: 'WOMAN' })}
 <main class="bag">
   <h1 class="u-label bag__h">SHOPPING BAG</h1>
   <div class="bag__grid">
     <div>
-      <div class="bag__item">
-        <div class="bag__media">${pic(u.img, u.ph, HERO.name)}</div>
-        <div class="bag__meta">
-          <p class="u-eyebrow">${COPY.programme}</p>
-          <p class="bag__name">${HERO.name} - ${HERO.colour}</p>
-          <p class="u-meta">Size M &middot; ${tierOf(u.tier).code} &middot; ${u.seller}</p>
-          <p class="u-meta">${u.eta}</p>
-          <div class="bag__links"><a class="link-u" href="#">Remove</a></div>
-        </div>
-        <div class="bag__price">${money(u.price)}</div>
-      </div>
+      <div data-bag></div>
       ${note('WHAT THE BUYER SEES', `The only difference from an ordinary Zara order is a longer delivery window and a
       line of fees. Checkout, payment and support are the flows Zara already runs.`)}
     </div>
 
-    <aside class="bag__sum">
+    <aside class="bag__sum" data-sum>
       <h2 class="u-label">ORDER SUMMARY</h2>
       <ul class="sum">
-        <li><span>Subtotal</span><b>${money(u.price)}</b></li>
-        <li><span>${COPY.buyerFee}</span><b>${money(fee)}</b></li>
-        <li><span>Shipping</span><b>${money(ship)}</b></li>
+        <li><span>Subtotal</span><b data-sub>$0.00</b></li>
+        <li data-fee-row hidden><span>${COPY.buyerFee}</span><b data-fee>$0.00</b></li>
+        <li><span>Shipping</span><b data-ship>$4.95</b></li>
       </ul>
-      <div class="sum__total"><span>TOTAL</span><b>${money(u.price + fee + ship)}</b></div>
-      <p class="u-meta sum__note">The pre-owned transaction fee is $1.00 plus 5% of the item price, as on Zara Resell today.
-      The seller receives their full asking price.</p>
+      <div class="sum__total"><span>TOTAL</span><b data-total>$0.00</b></div>
+      <p class="u-meta sum__note" data-fee-note hidden>The pre-owned transaction fee is $1.00 plus 5% of the item price,
+      as on Zara Resell today. The seller receives their full asking price.</p>
       <a class="btn btn--primary btn--block" href="order.html">CONTINUE</a>
     </aside>
   </div>

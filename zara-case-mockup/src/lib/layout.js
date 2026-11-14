@@ -62,7 +62,7 @@ function header({ nav = 'WOMAN', bordered = false, bagCount = 0, logo = true } =
   </div>
   <div class="hdr-right">
     <div class="hdr-search"><input type="text" placeholder="Search" aria-label="Search"></div>
-    <a href="bag.html">BAG ${bagCount ? `[${bagCount}]` : '[0]'}</a>
+    <a href="bag.html" data-bag-count>BAG [0]</a>
     <a href="account.html">LOG IN</a>
     <a href="#">HELP</a>
   </div>

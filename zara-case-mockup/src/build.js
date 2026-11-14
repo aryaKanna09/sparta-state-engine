@@ -4,9 +4,8 @@ const fs = require('fs');
 const path = require('path');
 const L = require('./lib/layout');
 const buyer = require('./pages/buyer');
-const seller = require('./pages/seller');
 const meta = require('./pages/meta');
-const graderPage = require('./pages/grader');
+const sellerApp = require('./pages/sellerapp');
 
 const OUT = path.join(__dirname, '..', 'public');
 
@@ -48,38 +47,10 @@ const MANIFEST = [
     blurb: 'A sale that did not exist ten minutes ago, on a unit that was already lost.',
     note: 'Nothing was cannibalised.' },
 
-  { file: 'seller-notify.html', group: 'seller', title: 'The notification', render: seller.notify,
-    blurb: '"3 people are looking for the blazer you bought in March." The ask goes to the owner.',
-    note: 'Matched on the purchase record, not the catalogue.' },
-
-  { file: 'seller-closet.html', group: 'seller', title: 'Purchase history as supply', render: seller.closet,
-    blurb: 'My Purchases already exists in the Zara app. Attaching demand to it turns receipts into inventory.',
-    note: 'Authentication is free here.' },
-
-  { file: 'seller-capture.html', group: 'seller', title: 'Guided capture', render: seller.capture,
-    blurb: 'Four coached photographs — front, back, the Zara tag, and any wear. No listing to write.',
-    note: 'Grading is a photography problem first.' },
-
-  { file: 'grader.html', group: 'seller', title: 'Live camera grader', render: graderPage.grader,
-    script: 'assets/grader.js',
-    blurb: 'A working demo: opens the camera, coaches the shot for real, then returns a grade and a price.',
-    note: 'This one actually runs. Press 1/2/3 to lock the tier.' },
-
-  { file: 'seller-offer.html', group: 'seller', title: 'Grade and price', render: seller.offer,
-    blurb: 'Three tiers, four named checks, a band anchored to observed resale. Approve, decline or appeal.',
-    note: 'Tier names are our assumption — label them.' },
-
-  { file: 'seller-appeal.html', group: 'seller', title: 'Appeal', render: seller.appeal,
-    blurb: 'An automated grade that cannot be challenged is one sellers stop believing.',
-    note: 'The stated tolerance closes the obvious question.' },
-
-  { file: 'seller-dropoff.html', group: 'seller', title: 'Drop-off or ship', render: seller.dropoff,
-    blurb: 'Store returns run in reverse, then ship-from-store. No new distribution centre, no new carrier.',
-    note: 'The logistics question, answered on screen.' },
-
-  { file: 'seller-status.html', group: 'seller', title: 'Status and payout', render: seller.status,
-    blurb: 'Five states, no messages to answer, and the seller keeps 100% of the asking price.',
-    note: 'Four photographs and one decision.' },
+  { file: 'seller.html', group: 'seller', title: 'The seller journey', render: sellerApp.sellerApp,
+    script: 'assets/seller.js',
+    blurb: 'Tap it through: notification, your closet, four coached photographs, grade and price, drop-off, payout.',
+    note: 'Tap the notification to start. 1/2/3 locks the tier.' },
 
   { file: 'systems.html', group: 'argument', title: 'Six systems, four already run', render: meta.systems,
     blurb: 'The novelty claim made falsifiable, plus the cannibalisation and catalogue answers.',

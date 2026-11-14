@@ -35,7 +35,7 @@
   </div>
   <div class="hdr-right">
     <div class="hdr-search"><input type="text" placeholder="Search" aria-label="Search"></div>
-    <a href="bag.html">BAG [0]</a>
+    <a href="bag.html" data-bag-count>BAG [0]</a>
     <a href="account.html">LOG IN</a>
     <a href="#">HELP</a>
   </div>
@@ -48,7 +48,8 @@
     onerror="this.outerHTML=document.getElementById('ph-a').innerHTML"></div>
   </div>
 
-  <aside class="pdp__panel">
+  <aside class="pdp__panel" data-pdp data-name="TEXTURED TWEED BLAZER" data-colour="Blue"
+    data-price="109" data-img="blazer" data-ph="a">
     <h1 class="pdp__name">TEXTURED TWEED BLAZER - Blue</h1>
     <p class="pdp__price">$109.00</p>
     <p class="pdp__ref">Blue 2757/397/403</p>
@@ -59,10 +60,10 @@
       <span class="swatch"><i style="background:#d8cfc2"></i></span>
     </div>
 
-    <div class="sizes"><button class="size-row"><span class="size-row__name">XS</span></button><button class="size-row"><span class="size-row__name">S</span></button><button class="size-row is-out has-reloop" data-open-sheet>
+    <div class="sizes"><button class="size-row" data-size="XS"><span class="size-row__name">XS</span></button><button class="size-row" data-size="S"><span class="size-row__name">S</span></button><button class="size-row is-out has-reloop" data-open-sheet>
       <span class="size-row__name">M</span>
       <span class="size-row__reloop">EXPLORE PRE-OWNED</span>
-    </button><button class="size-row"><span class="size-row__name">L</span></button><button class="size-row"><span class="size-row__name">XL</span>
+    </button><button class="size-row" data-size="L"><span class="size-row__name">L</span></button><button class="size-row is-soon"><span class="size-row__name">XL</span>
         <span class="size-row__meta">Coming soon</span></button></div>
 
     <div class="pdp__sublinks">
@@ -71,7 +72,8 @@
     </div>
 
     <div class="pdp__actions">
-      <button class="btn btn--primary btn--block">ADD TO BAG</button>
+      <button class="btn btn--primary btn--block btn--disabled" data-add>ADD TO BAG</button>
+      <p class="u-meta size-hint" data-size-hint></p>
     </div>
 
     <p class="pdp__desc">Regular-fit blazer with a lapel collar, long sleeves, front welt pockets and frayed trims.</p>
@@ -181,7 +183,7 @@
 
 <div class="wt">
   <a href="index.html">CONTENTS</a>
-  <span class="wt__step">STEP 03 / 18</span>
+  <span class="wt__step">STEP 03 / 11</span>
   <span class="wt__disc">CONCEPT MOCKUP &middot; NOT AFFILIATED WITH ZARA</span>
   <span class="wt__side">The moment of highest intent and guaranteed disappointment.</span>
   <span class="wt__spacer"></span>

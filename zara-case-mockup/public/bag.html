@@ -35,7 +35,7 @@
   </div>
   <div class="hdr-right">
     <div class="hdr-search"><input type="text" placeholder="Search" aria-label="Search"></div>
-    <a href="bag.html">BAG [1]</a>
+    <a href="bag.html" data-bag-count>BAG [0]</a>
     <a href="account.html">LOG IN</a>
     <a href="#">HELP</a>
   </div>
@@ -44,32 +44,21 @@
   <h1 class="u-label bag__h">SHOPPING BAG</h1>
   <div class="bag__grid">
     <div>
-      <div class="bag__item">
-        <div class="bag__media"><img src="assets/img/seller-1.webp" alt="TEXTURED TWEED BLAZER" loading="lazy"
-    onerror="this.outerHTML=document.getElementById('ph-a').innerHTML"></div>
-        <div class="bag__meta">
-          <p class="u-eyebrow">ZARA PRE-OWNED</p>
-          <p class="bag__name">TEXTURED TWEED BLAZER - Blue</p>
-          <p class="u-meta">Size M &middot; EXCELLENT &middot; Brooklyn, NY</p>
-          <p class="u-meta">Arrives 24–27 Nov</p>
-          <div class="bag__links"><a class="link-u" href="#">Remove</a></div>
-        </div>
-        <div class="bag__price">$82.00</div>
-      </div>
+      <div data-bag></div>
       <div class="note"><b>WHAT THE BUYER SEES</b>The only difference from an ordinary Zara order is a longer delivery window and a
       line of fees. Checkout, payment and support are the flows Zara already runs.</div>
     </div>
 
-    <aside class="bag__sum">
+    <aside class="bag__sum" data-sum>
       <h2 class="u-label">ORDER SUMMARY</h2>
       <ul class="sum">
-        <li><span>Subtotal</span><b>$82.00</b></li>
-        <li><span>Pre-owned transaction fee</span><b>$5.10</b></li>
-        <li><span>Shipping</span><b>$4.95</b></li>
+        <li><span>Subtotal</span><b data-sub>$0.00</b></li>
+        <li data-fee-row hidden><span>Pre-owned transaction fee</span><b data-fee>$0.00</b></li>
+        <li><span>Shipping</span><b data-ship>$4.95</b></li>
       </ul>
-      <div class="sum__total"><span>TOTAL</span><b>$92.05</b></div>
-      <p class="u-meta sum__note">The pre-owned transaction fee is $1.00 plus 5% of the item price, as on Zara Resell today.
-      The seller receives their full asking price.</p>
+      <div class="sum__total"><span>TOTAL</span><b data-total>$0.00</b></div>
+      <p class="u-meta sum__note" data-fee-note hidden>The pre-owned transaction fee is $1.00 plus 5% of the item price,
+      as on Zara Resell today. The seller receives their full asking price.</p>
       <a class="btn btn--primary btn--block" href="order.html">CONTINUE</a>
     </aside>
   </div>
@@ -170,7 +159,7 @@
 
 <div class="wt">
   <a href="index.html">CONTENTS</a>
-  <span class="wt__step">STEP 08 / 18</span>
+  <span class="wt__step">STEP 08 / 11</span>
   <span class="wt__disc">CONCEPT MOCKUP &middot; NOT AFFILIATED WITH ZARA</span>
   <span class="wt__side">Same checkout. Longer delivery window.</span>
   <span class="wt__spacer"></span>
