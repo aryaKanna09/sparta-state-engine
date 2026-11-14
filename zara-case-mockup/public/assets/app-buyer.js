@@ -105,7 +105,9 @@
     $('#sizelist').innerHTML = SIZES.map(function (z) {
       if (z.state === 'in')   return '<button class="srow" data-size="' + z.s + '"><span class="srow__n">' + z.s + '</span></button>';
       if (z.state === 'soon') return '<button class="srow"><span class="srow__n">' + z.s + '</span><span class="srow__m">Coming soon · <u>Notify me</u></span></button>';
-      return '<button class="srow is-out"><span class="srow__n">' + z.s + '</span><span class="srow__sim">Similar</span></button>';
+      // sold out: the highest-intent moment to offer pre-owned
+      return '<button class="srow is-out has-alt" data-pojump><span class="srow__n">' + z.s + '</span>' +
+             '<span class="srow__alt">PRE-OWNED IN M</span></button>';
     }).join('');
   }
 
@@ -164,7 +166,7 @@
   /* ---------------------------------------------------------------- bag */
   function addToBag(it) { bag.push(it); paintBagCount(); }
   function paintBagCount() {
-    $$('[data-bagc]').forEach(function (e) { e.textContent = 'BAG' + (bag.length ? ' (' + bag.length + ')' : ''); });
+    $$('[data-bagc]').forEach(function (e) { e.textContent = String(bag.length); });
   }
   function paintBag() {
     if (!bag.length) {
@@ -214,6 +216,8 @@
       var sr = hit('.srow[data-size]');
       if (sr) { $$('.srow').forEach(function (r) { r.classList.remove('is-sel'); });
         sr.classList.add('is-sel'); chosen = sr.getAttribute('data-size'); return; }
+
+      if (hit('[data-pojump]')) { paintUnits(); closeSheets(); return setTimeout(function(){ openSheet('po'); }, 180); }
 
       if (hit('[data-add-new]')) {
         if (!chosen) return toast('Select a size');
