@@ -5,10 +5,12 @@
   var $$ = function (s, r) { return [].slice.call((r || document).querySelectorAll(s)); };
   var money = function (n) { return '$' + n.toFixed(2); };
 
+  // Zara's own four-tier ladder, verbatim from the Pre-Owned listing flow
   var TIERS = {
-    e: { code: 'EXCELLENT', blurb: 'Worn a handful of times. No visible wear.' },
-    g: { code: 'GOOD',      blurb: 'Light, even wear. Shape and colour intact.' },
-    f: { code: 'FAIR',      blurb: 'Visible wear, photographed in detail.' }
+    n: { code: 'NEW WITH TAGS', blurb: 'Unworn, original tags still attached.' },
+    e: { code: 'LIKE NEW',      blurb: 'Worn a handful of times. No visible wear.' },
+    g: { code: 'GOOD',          blurb: 'Light, even wear. Shape and colour intact.' },
+    f: { code: 'FAIR',          blurb: 'Visible wear, photographed in detail.' }
   };
   var CHECKS = [
     ['Pilling & surface', 'No pilling detected'],
@@ -35,12 +37,12 @@
 
   /* Pre-owned listings. Same SKU = same garment, different owners' photos. */
   var PO = [
-    { of:'blazer', tier:'e', price:82, img:'po-blazer-e', seller:'Brooklyn, NY',     when:'March 2026',    eta:'24–27 Nov' },
-    { of:'blazer', tier:'g', price:63, img:'po-blazer-g', seller:'Queens, NY',       when:'November 2025', eta:'25–28 Nov' },
-    { of:'blazer', tier:'f', price:46, img:'po-blazer-f', seller:'Jersey City, NJ',  when:'August 2025',   eta:'25–28 Nov' },
-    { of:'dress',  tier:'g', price:41, img:'po-dress-g',  seller:'Hoboken, NJ',      when:'February 2026', eta:'25–28 Nov' },
+    { of:'blazer', tier:'e', price:82, img:'po-plaid-1', seller:'Brooklyn, NY',     when:'March 2026',    eta:'24–27 Nov' },
+    { of:'blazer', tier:'g', price:63, img:'po-plaid-2', seller:'Queens, NY',       when:'November 2025', eta:'25–28 Nov' },
+    { of:'blazer', tier:'f', price:46, img:'po-knit-1', seller:'Jersey City, NJ',  when:'August 2025',   eta:'25–28 Nov' },
+    { of:'dress',  tier:'g', price:41, img:'po-plaid-3',  seller:'Hoboken, NJ',      when:'February 2026', eta:'25–28 Nov' },
     { of:'black',  tier:'f', price:19, img:'po-black-f',  seller:'Astoria, NY',      when:'July 2025',     eta:'26–29 Nov' },
-    { of:'knit',   tier:'e', price:34, img:'po-knit-e',   seller:'Park Slope, NY',   when:'May 2026',      eta:'24–27 Nov' },
+    { of:'knit',   tier:'e', price:34, img:'po-knit-2',   seller:'Park Slope, NY',   when:'May 2026',      eta:'24–27 Nov' },
     { of:'mini',   tier:'g', price:27, img:'po-mini-g',   seller:'Harlem, NY',       when:'October 2025',  eta:'25–28 Nov' },
     { of:'skirt',  tier:'f', price:38, img:'po-skirt-f',  seller:'Bushwick, NY',     when:'June 2025',     eta:'26–29 Nov' }
   ];

@@ -183,7 +183,13 @@
           <ul id="po-facts"></ul>
         </div>
       </div>
-      <div class="actionbar"><button class="btn btn--pri" data-add-po>ADD TO BAG</button></div>
+      <div class="actionbar">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <button class="btn btn--quiet">MAKE OFFER</button>
+          <button class="btn btn--pri" data-add-po>ADD</button>
+        </div>
+        <p class="u-met" style="text-align:center;margin:2px 0 0">Tax and fees not included</p>
+      </div>
       <div class="hind"></div>
     </section>
 
@@ -194,7 +200,8 @@
       <div class="scroll">
         <p class="u-met" style="margin:0 0 11px">Filter by condition — which Zara's catalogue cannot do today, because nothing is graded.</p>
         <div style="display:flex;gap:6px;margin-bottom:14px" id="cond">
-          <button class="btn btn--quiet btn--sm" data-tier="e" style="width:auto;padding:0 10px"><span class="dot dot--e"></span>EXCELLENT</button>
+          <button class="btn btn--quiet btn--sm" data-tier="n" style="width:auto;padding:0 10px">NEW WITH TAGS</button>
+          <button class="btn btn--quiet btn--sm" data-tier="e" style="width:auto;padding:0 10px">LIKE NEW</button>
           <button class="btn btn--quiet btn--sm" data-tier="g" style="width:auto;padding:0 10px"><span class="dot dot--g"></span>GOOD</button>
           <button class="btn btn--quiet btn--sm" data-tier="f" style="width:auto;padding:0 10px"><span class="dot dot--f"></span>FAIR</button>
         </div>

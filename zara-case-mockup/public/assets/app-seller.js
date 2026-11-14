@@ -9,7 +9,7 @@
 
   var RETAIL = 109;
   var TIERS = {
-    e: { code: 'EXCELLENT', pct: .75, blurb: 'Worn a handful of times. No visible wear.' },
+    e: { code: 'LIKE NEW', pct: .75, blurb: 'Worn a handful of times. No visible wear.' },
     g: { code: 'GOOD',      pct: .58, blurb: 'Light, even wear. Shape and colour intact.' },
     f: { code: 'FAIR',      pct: .42, blurb: 'Visible wear, photographed in detail.' }
   };

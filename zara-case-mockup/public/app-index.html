@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ZARA RELOOP — Buyer &amp; Seller</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400&display=swap">
+<link rel="stylesheet" href="assets/ios.css">
+<link rel="icon" href="assets/favicon.svg">
+<style>
+  body{background:#000;color:#fff}
+  .wrap{max-width:1000px;margin:0 auto;padding:40px 20px 70px}
+  .hd{text-align:center;margin-bottom:34px}
+  .hd h1{font-family:var(--display);font-weight:400;font-size:40px;margin:0 0 10px;letter-spacing:-.01em}
+  .hd p{margin:0 auto;max-width:56ch;font-size:var(--f13);color:#b9b9b9;line-height:1.75}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .card{border:1px solid #2c2c2c;padding:22px;display:flex;flex-direction:column}
+  .card h2{font-size:var(--f11);letter-spacing:var(--tr-w);text-transform:uppercase;margin:0 0 10px}
+  .card p{font-size:var(--f12);color:#aaa;line-height:1.7;margin:0 0 16px;flex:1}
+  .card a{display:block;text-align:center;background:#fff;color:#000;padding:14px;
+    font-size:var(--f11);letter-spacing:var(--tr-m);text-transform:uppercase}
+  .card a:active{opacity:.8}
+  .steps{margin:0 0 16px}
+  .steps li{font-size:var(--f11);color:#8e8e8e;padding:5px 0 5px 18px;position:relative;line-height:1.5}
+  .steps li::before{content:"";position:absolute;left:0;top:11px;width:7px;height:1px;background:#555}
+  .note2{border-left:2px solid #444;padding:14px 16px;margin-top:30px;font-size:var(--f11);color:#9d9d9d;line-height:1.75}
+  .note2 b{display:block;color:#fff;font-size:var(--f10);letter-spacing:var(--tr-w);text-transform:uppercase;margin-bottom:6px}
+  @media(max-width:700px){.two{grid-template-columns:1fr}.hd h1{font-size:30px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hd">
+    <h1><span class="wordmark" style="font-size:40px">ZARA</span> RELOOP</h1>
+    <p>A pre-owned loop built inside the Zara iPhone app rather than bolted onto a separate website.
+       Two flows — open either on a phone.</p>
+  </div>
+
+  <div class="two">
+    <div class="card">
+      <h2>Buyer</h2>
+      <p>Pre-owned stands beside new on every product, and buying it is the same flow as buying new.</p>
+      <ul class="steps">
+        <li>Menu — pre-owned sits at 07, as it does today</li>
+        <li>Product page with SHOP PRE-OWNED beside ADD TO BAG</li>
+        <li>Sold-out size opens matches in your size</li>
+        <li>Listing, bag with the real $1 + 5% fee, confirmation</li>
+      </ul>
+      <a href="app-buyer.html">OPEN BUYER FLOW</a>
+    </div>
+
+    <div class="card">
+      <h2>Seller</h2>
+      <p>The prompt is a price, not a demand claim. Photograph it, accept a grade, choose once how it travels.</p>
+      <ul class="steps">
+        <li>Notification: sell this for up to $82, +$10 credit</li>
+        <li>Four coached photographs — the camera is real</li>
+        <li>Grade and price, with appeal</li>
+        <li>Drop-off or ship, then the sold alert and payout</li>
+      </ul>
+      <a href="app-seller.html">OPEN SELLER FLOW</a>
+    </div>
+  </div>
+
+  <div class="note2"><b>Running the seller demo</b>
+    The camera and its coaching are real — the three chips go black when exposure, sharpness and framing actually pass.
+    Press 1, 2 or 3 to lock the grade before the last shot. If the camera is blocked, choose
+    "Use the sample garment" and the flow still completes. The grade itself is simulated.</div>
+
+  <div class="note2"><b>What is Zara's and what is ours</b>
+    Zara's, reconstructed: the app chrome, the numbered menu with pre-owned at 07, the four-tier condition ladder
+    (New with tags / Like new / Good / Fair), MAKE OFFER beside ADD, the condition filter, market-price guidance,
+    and the buyer-paid $1.00 + 5% fee. Ours: grading the condition instead of asking the seller to self-declare it,
+    binding the price to that grade, routing the garment through a store so Zara can verify it, surfacing pre-owned
+    on the new-product page, and the sold-out credit bonus.</div>
+</div>
+</body>
+</html>
