@@ -174,13 +174,14 @@ ul,ol{margin:0;padding:0;list-style:none}
 .hero__cap span{font-size:var(--f10);opacity:.85}
 
 /* product grid, 2 up, 2:3 */
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:2px}
-.tile{position:relative;background:#0d0d0d}
-.tile__m{aspect-ratio:2/3;overflow:hidden;position:relative}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:2px;align-items:stretch}
+.tile{position:relative;background:#0d0d0d;display:flex;flex-direction:column;width:100%;text-align:left;padding:0}
+.tile__m{display:block;aspect-ratio:2/3;overflow:hidden;position:relative;flex:0 0 auto}
 .tile__m img,.tile__m .ph{width:100%;height:100%;object-fit:cover}
-.tile__i{padding:7px 8px 14px;background:#000}
-.tile__n{font-size:var(--f11);letter-spacing:var(--tr-t);line-height:1.35}
-.tile__p{font-size:var(--f11);margin-top:2px}
+.tile__i{display:block;padding:9px 9px 16px;background:#000;flex:1 1 auto}
+.tile__n{display:block;font-size:var(--f11);letter-spacing:var(--tr-t);line-height:1.35;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tile__p{display:block;font-size:var(--f11);margin-top:5px;color:var(--g900)}
 .tile__flag{position:absolute;top:8px;left:8px;background:#000;color:#fff;
   font-size:var(--f9);letter-spacing:var(--tr-w);text-transform:uppercase;padding:3px 6px}
 
@@ -429,11 +430,15 @@ ul,ol{margin:0;padding:0;list-style:none}
 .edit span{display:block;margin-top:9px;font-size:var(--f10);letter-spacing:var(--tr-w);text-transform:uppercase;color:#fff}
 
 /* numbered section: |04| COLLECTION  +  right-hand item list */
-.msec{display:grid;grid-template-columns:118px 1fr;gap:16px;padding:22px 18px 0;align-items:start}
-.msec__n{display:flex;align-items:baseline;gap:7px;font-size:var(--f12);letter-spacing:.08em;color:#fff}
+.msec{display:grid;grid-template-columns:118px 1fr;gap:16px;padding:20px 18px 0;align-items:start}
+.msec__n{display:flex;align-items:baseline;gap:7px;font-size:var(--f12);letter-spacing:.08em;color:#fff;
+  width:100%;text-align:left;padding:2px 0}
+.msec__n:active{opacity:.6}
 .msec__n i{font-style:normal;color:#fff;border-left:1px solid #fff;border-right:1px solid #fff;padding:0 5px}
 .msec__l li{padding:7px 0}
-.msec__l button{font-size:var(--f15);letter-spacing:.01em;color:#fff;text-transform:uppercase;font-weight:var(--w3)}
+.msec__l button{display:block;width:100%;text-align:left;font-size:var(--f15);letter-spacing:.01em;
+  color:#fff;text-transform:uppercase;font-weight:var(--w3);padding:2px 0}
+.msec__l button:active{opacity:.6}
 .msec__l sup{font-size:8px;letter-spacing:.08em;vertical-align:super;margin-left:3px}
 .msec__l .sale{color:#ff2d9b}          /* SPECIAL PRICES is the one accent */
 .msec__l .po{border-bottom:1px solid #fff;padding-bottom:2px}
