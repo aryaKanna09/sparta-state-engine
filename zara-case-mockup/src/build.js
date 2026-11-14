@@ -6,44 +6,45 @@ const L = require('./lib/layout');
 const buyer = require('./pages/buyer');
 const seller = require('./pages/seller');
 const meta = require('./pages/meta');
+const graderPage = require('./pages/grader');
 
 const OUT = path.join(__dirname, '..', 'public');
 
 /* The walkthrough, in presentation order. */
 const MANIFEST = [
-  { file: 'home.html', group: 'buyer', title: 'Homepage', render: buyer.home,
+  { file: 'home.html', chrome: 'zara.com/us/', group: 'buyer', title: 'Homepage', render: buyer.home,
     blurb: 'zara.com as it is: full-bleed campaign imagery, the wordmark set across the photograph, no prices.',
     note: 'Zara as it is today. One screen, no scroll.' },
 
-  { file: 'plp.html', group: 'buyer', title: 'Category listing', render: buyer.plp,
+  { file: 'plp.html', chrome: 'zara.com/us/en/woman-blazers-l1055.html', group: 'buyer', title: 'Category listing', render: buyer.plp,
     blurb: 'Blazers. 2:3 tiles, hover swaps to the second shot, the VIEW 1/2 density control.',
     note: 'She finds the blazer.' },
 
-  { file: 'pdp.html', group: 'buyer', title: 'Product page — size M is gone', render: buyer.pdp,
+  { file: 'pdp.html', chrome: 'zara.com/us/en/textured-tweed-blazer-p02757397.html', group: 'buyer', title: 'Product page — size M is gone', render: buyer.pdp,
     blurb: 'The dead end. M is struck through. Today that is where the journey ends.',
     note: 'The moment of highest intent and guaranteed disappointment.' },
 
-  { file: 'pdp-reloop.html', group: 'buyer', title: 'Pre-owned in your size', render: buyer.pdpSheet,
+  { file: 'pdp-reloop.html', chrome: 'zara.com/us/en/textured-tweed-blazer-p02757397.html?preowned=M', group: 'buyer', title: 'Pre-owned in your size', render: buyer.pdpSheet,
     blurb: 'The intervention: three graded, priced units of this exact product code, in the size that is gone.',
     note: 'The dead end becomes a shelf.' },
 
-  { file: 'reloop-request.html', group: 'buyer', title: 'Asking the owners', render: buyer.reloopRequest,
+  { file: 'reloop-request.html', chrome: 'zara.com/us/en/preowned/request-placed', group: 'buyer', title: 'Asking the owners', render: buyer.reloopRequest,
     blurb: 'If nothing is listed, the click becomes a demand signal sent to the 14 people who own it.',
     note: 'Demand creates the supply.' },
 
-  { file: 'preowned-pdp.html', group: 'buyer', title: 'Pre-owned product page', render: buyer.preownedPdp,
+  { file: 'preowned-pdp.html', chrome: 'zara.com/us/en/preowned/textured-tweed-blazer-p02757397.html', group: 'buyer', title: 'Pre-owned product page', render: buyer.preownedPdp,
     blurb: "Zara's catalogue packshot beside the owner's own photographs, with the condition report.",
     note: 'Dual imagery is a real Zara Pre-Owned feature.' },
 
-  { file: 'preowned.html', group: 'buyer', title: 'Pre-owned catalogue', render: buyer.preowned,
+  { file: 'preowned.html', chrome: 'zara.com/us/en/preowned-woman-mkt7630.html', group: 'buyer', title: 'Pre-owned catalogue', render: buyer.preowned,
     blurb: 'The browsable surface, filterable by condition — which Zara cannot do today, because nothing is graded.',
     note: 'Supply keeps working after the trigger that created it.' },
 
-  { file: 'bag.html', group: 'buyer', title: 'Bag and fees', render: buyer.bag,
+  { file: 'bag.html', chrome: 'zara.com/us/en/shop/cart', group: 'buyer', title: 'Bag and fees', render: buyer.bag,
     blurb: "The real Zara Resell economics: the buyer pays $1.00 + 5%, the seller keeps their full asking price.",
     note: 'Same checkout. Longer delivery window.' },
 
-  { file: 'order.html', group: 'buyer', title: 'Order confirmed', render: buyer.order,
+  { file: 'order.html', chrome: 'zara.com/us/en/order/confirmation', group: 'buyer', title: 'Order confirmed', render: buyer.order,
     blurb: 'A sale that did not exist ten minutes ago, on a unit that was already lost.',
     note: 'Nothing was cannibalised.' },
 
@@ -58,6 +59,11 @@ const MANIFEST = [
   { file: 'seller-capture.html', group: 'seller', title: 'Guided capture', render: seller.capture,
     blurb: 'Four coached photographs — front, back, the Zara tag, and any wear. No listing to write.',
     note: 'Grading is a photography problem first.' },
+
+  { file: 'grader.html', group: 'seller', title: 'Live camera grader', render: graderPage.grader,
+    script: '/assets/grader.js',
+    blurb: 'A working demo: opens the camera, coaches the shot for real, then returns a grade and a price.',
+    note: 'This one actually runs. Press 1/2/3 to lock the tier.' },
 
   { file: 'seller-offer.html', group: 'seller', title: 'Grade and price', render: seller.offer,
     blurb: 'Three tiers, four named checks, a band anchored to observed resale. Approve, decline or appeal.',
@@ -90,6 +96,8 @@ function build() {
     const html = L.doc({
       title: `${p.title} — ZARA`,
       body: p.render(),
+      chrome: p.chrome || null,
+      script: p.script || '',
       wt: {
         step: p.step,
         total,

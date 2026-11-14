@@ -28,8 +28,35 @@ bottom — **arrow keys** move through the flow, so it can be driven hands-free.
 | 07 | Pre-owned catalogue | Filterable by condition |
 | 08 | Bag and fees | Real Zara Resell economics |
 | 09 | Order confirmed | Nothing cannibalised |
-| 10–16 | Seller flow | Notification → closet → capture → grade → appeal → drop-off → payout |
-| 17 | Six systems | The novelty argument, made falsifiable |
+| 10–12 | Seller flow | Notification → purchase history → guided capture |
+| **13** | **Live camera grader** | **Actually runs — real camera, real capture coaching** |
+| 14–17 | Seller flow | Grade → appeal → drop-off → payout |
+| 18 | Six systems | The novelty argument, made falsifiable |
+
+Desktop screens are presented inside a fictional laptop browser window with a
+realistic zara.com URL, so exports read as screenshots rather than a web page.
+
+## The live grader (`/grader.html`)
+
+The only screen that is not a mockup. It opens the camera, analyses every frame
+in-browser and arms the shutter when the shot is good enough to grade from.
+
+**Real:** camera capture, and per-frame measurement of exposure (mean luminance),
+sharpness (variance of the Laplacian) and framing (edge energy inside the guide box
+versus outside). The three chips go black when each one passes.
+
+**Simulated:** the condition grade. It is weighted by measured capture quality, so it
+reacts to what you photograph, but it is not a trained condition model. Say so if a
+judge asks — the honest answer is stronger than the vague one.
+
+**Running it on stage**
+
+- Needs HTTPS or localhost for camera access. The Vercel URL is HTTPS, so a phone works.
+- **Press `1`, `2` or `3` before the last shot** to lock the tier to EXCELLENT / GOOD / FAIR
+  so the result is predictable in front of judges. The lock is shown under the phone.
+- **Space bar** fires the shutter.
+- If the camera is blocked or absent it falls back to a bundled photograph and still
+  completes the flow — it will not die in front of judges.
 
 ## What is reconstructed vs. what is ours
 

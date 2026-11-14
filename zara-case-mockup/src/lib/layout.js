@@ -10,7 +10,8 @@ const BRAND = {
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 /* ---------------------------------------------------------------- document */
-function doc({ title, body, cls = '', wt = null, bodyClass = '' }) {
+function doc({ title, body, cls = '', wt = null, bodyClass = '', chrome = null, script = '' }) {
+  const framed = !!chrome;
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -22,12 +23,25 @@ function doc({ title, body, cls = '', wt = null, bodyClass = '' }) {
 <link rel="stylesheet" href="/assets/zara.css">
 <link rel="icon" href="/assets/favicon.svg">
 </head>
-<body class="${bodyClass}${wt ? ' has-wt' : ''} ${cls}">
-${body}
+<body class="${bodyClass}${wt ? ' has-wt' : ''}${framed ? ' has-chrome' : ''} ${cls}">
+${framed ? `<div class="winwrap"><div class="win">${browserChrome(chrome)}<div class="win__page">${body}</div></div></div>` : body}
 ${wt ? walkthrough(wt) : ''}
 <script src="/assets/app.js" defer></script>
+${script ? `<script src="${script}" defer></script>` : ''}
 </body>
 </html>`;
+}
+
+/* A fictional laptop browser window, so the desktop screens read as real
+   screenshots rather than a web page inside a web page. */
+function browserChrome(url) {
+  return `
+<div class="win__bar">
+  <span class="win__lights"><i></i><i></i><i></i></span>
+  <span class="win__nav">&#8249; &#8250;</span>
+  <span class="win__url"><svg width="9" height="11" viewBox="0 0 9 11" aria-hidden="true"><path d="M2 4.5V3a2.5 2.5 0 015 0v1.5" fill="none" stroke="currentColor" stroke-width="1"/><rect x="1" y="4.5" width="7" height="5.5" rx="1" fill="currentColor"/></svg>${esc(url)}</span>
+  <span class="win__tools">&#8635;&nbsp;&nbsp;&#8862;</span>
+</div>`;
 }
 
 /* ------------------------------------------------------------ site header */
@@ -186,5 +200,5 @@ function figureSvg(v) {
 
 module.exports = {
   BRAND, esc, doc, header, footer, walkthrough, phone, appBar, tabbar, steps, note,
-  shot, figureSvg, pic, phTemplates,
+  shot, figureSvg, pic, phTemplates, browserChrome,
 };
