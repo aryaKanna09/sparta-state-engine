@@ -1,5 +1,5 @@
 /* =========================================================================
-   ZARA RELOOP — seller journey, as a working app.
+   ZARA REHANG — seller journey, as a working app.
    Notification -> closet -> guided capture (real camera) -> grade -> offer
    -> appeal -> drop-off -> payout. Every step is tappable.
    Camera capture and the capture coaching are REAL. The grade is simulated.

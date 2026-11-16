@@ -60,7 +60,7 @@ ${phTemplates()}`;
 
 /* ====================================================================== 03
    PDP — the pivot. Size M is sold out. Today that is a dead end; here it
-   carries the RELOOP affordance.
+   carries the REHANG affordance.
    ====================================================================== */
 function pdp({ sheet = false } = {}) {
   const sizeRow = (z) => {
@@ -72,9 +72,9 @@ function pdp({ sheet = false } = {}) {
         <span class="size-row__meta">${COPY.comingSoon}</span></button>`;
     }
     // SOLD OUT — struck through, and this is where we intervene.
-    return `<button class="size-row is-out has-reloop" data-open-sheet>
+    return `<button class="size-row is-out has-rehang" data-open-sheet>
       <span class="size-row__name">${z.s}</span>
-      <span class="size-row__reloop">${COPY.reloopCta}</span>
+      <span class="size-row__rehang">${COPY.rehangCta}</span>
     </button>`;
   };
 
@@ -119,7 +119,7 @@ ${header({ nav: 'WOMAN' })}
     </div>
   </aside>
 </main>
-${sheet ? reloopSheet() : ''}
+${sheet ? rehangSheet() : ''}
 ${footer()}
 ${phTemplates()}`;
 }
@@ -127,7 +127,7 @@ ${phTemplates()}`;
 /* ====================================================================== 04
    THE SHEET — pre-owned units of this exact SKU, in the size that is gone.
    ====================================================================== */
-function reloopSheet() {
+function rehangSheet() {
   const unit = (u) => {
     const t = tierOf(u.tier);
     return `
@@ -157,7 +157,7 @@ function reloopSheet() {
     <div class="sheet__ask">
       <p class="u-label">NOT THE ONE?</p>
       <p class="u-meta">We can ask the 14 people who bought this blazer in M whether they want to sell it. You will be notified if one is listed.</p>
-      <a class="btn btn--outline btn--block" href="reloop-request.html">ASK OWNERS OF THIS ITEM</a>
+      <a class="btn btn--outline btn--block" href="rehang-request.html">ASK OWNERS OF THIS ITEM</a>
     </div>
   </div>
 </aside>`;
@@ -168,7 +168,7 @@ function pdpSheet() { return pdp({ sheet: true }); }
 /* ====================================================================== 05
    REQUEST PLACED — the demand signal that creates supply.
    ====================================================================== */
-function reloopRequest() {
+function rehangRequest() {
   return `
 ${header({ nav: 'WOMAN' })}
 <main class="narrow">
@@ -282,7 +282,7 @@ function preowned() {
     <a class="card" href="preowned-pdp.html">
       <div class="card__media">
         ${pic(u.img, u.ph, p.name)}
-        <span class="card__flag card__flag--reloop">${t.code}</span>
+        <span class="card__flag card__flag--rehang">${t.code}</span>
       </div>
       <div class="card__info">
         <div class="card__name">${p.name}</div>
@@ -371,4 +371,4 @@ ${footer()}
 ${phTemplates()}`;
 }
 
-module.exports = { home, plp, pdp, pdpSheet, reloopRequest, preownedPdp, preowned, bag, order };
+module.exports = { home, plp, pdp, pdpSheet, rehangRequest, preownedPdp, preowned, bag, order };

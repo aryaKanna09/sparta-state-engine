@@ -1,4 +1,4 @@
-# ZARA RELOOP — case competition UI mockup
+# ZARA REHANG — case competition UI mockup
 
 A clickable, hyper-realistic reconstruction of zara.com and the Zara app, built to
 walk judges from the **buyer** side to the **seller** side of the Team Fireworks
@@ -93,7 +93,7 @@ placeholder rather than a broken image, so the deck never shows a broken tile.
 
 ## Financial model
 
-`model/ZARA_ReLoop_Financial_Model.xlsx` is the three-year US model behind the case (live formulas; `Assumptions!C2` switches Conservative / Base / Upside).
+`model/ZARA_ReHang_Financial_Model.xlsx` is the three-year US model behind the case (live formulas; `Assumptions!C2` switches Conservative / Base / Upside).
 `model/build_model.py` generates it, `model/run_model.py` recalculates every scenario and lever with LibreOffice, `model/finalize.py` assembles the workbook.
 
-    cd model && python3 run_model.py /tmp/reloop && python3 finalize.py /tmp/reloop
+    cd model && python3 run_model.py /tmp/rehang && python3 finalize.py /tmp/rehang

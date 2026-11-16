@@ -3,8 +3,8 @@
 
 const BRAND = {
   // The case-comp feature mark. Change here and it changes everywhere.
-  feature: 'RELOOP',
-  featureLong: 'ZARA RELOOP',
+  feature: 'REHANG',
+  featureLong: 'ZARA REHANG',
 };
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');

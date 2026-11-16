@@ -39,9 +39,9 @@ const COPY = {
   buyerFeePct: 0.05,
 
   // ---- our feature ----
-  featureName: 'ZARA RELOOP',                                  // [NEW]
-  reloopCta: 'EXPLORE PRE-OWNED',                              // [NEW]
-  reloopTagline: 'The size is gone. The garment is not.',      // [NEW]
+  featureName: 'ZARA REHANG',                                  // [NEW]
+  rehangCta: 'EXPLORE PRE-OWNED',                              // [NEW]
+  rehangTagline: 'The size is gone. The garment is not.',      // [NEW]
 };
 
 /* Condition tiers. Zara does NOT publish its condition ladder — these three

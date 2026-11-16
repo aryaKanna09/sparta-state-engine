@@ -24,9 +24,9 @@
 
   /* JOIN LIFE is the only sanctioned accent on zara.com */
   --joinlife:#5c6f52;
-  /* RELOOP — the case-comp feature mark. One constant: change it here. */
-  --reloop:#2f2f2f;
-  --reloop-wash:#f4f3f1;
+  /* REHANG — the case-comp feature mark. One constant: change it here. */
+  --rehang:#2f2f2f;
+  --rehang-wash:#f4f3f1;
 
   --tier-excellent:#2d4a35;
   --tier-good:#4a5a6b;
@@ -270,7 +270,7 @@ ul{margin:0;padding:0;list-style:none}
   font-size:var(--fs-nano);letter-spacing:var(--tr-wide);text-transform:uppercase;
   background:var(--white);padding:4px 7px;
 }
-.card__flag--reloop{background:var(--black);color:var(--white)}
+.card__flag--rehang{background:var(--black);color:var(--white)}
 
 /* =========================================================================
    PDP
@@ -308,25 +308,25 @@ ul{margin:0;padding:0;list-style:none}
 .size-row.is-out{cursor:default}
 .size-row.is-out .size-row__name{color:var(--grey-300);text-decoration:line-through}
 
-/* the injected RELOOP affordance, in place of the dead size */
-.size-row__reloop{
+/* the injected REHANG affordance, in place of the dead size */
+.size-row__rehang{
   display:inline-flex;align-items:center;gap:6px;
   font-size:var(--fs-nano);letter-spacing:var(--tr-wide);text-transform:uppercase;
   color:var(--black);border-bottom:1px solid var(--black);padding-bottom:2px;
 }
-.size-row__reloop::before{
+.size-row__rehang::before{
   content:"";width:6px;height:6px;border-radius:50%;
   background:var(--black);
 }
-.size-row.is-out.has-reloop{background:var(--reloop-wash)}
+.size-row.is-out.has-rehang{background:var(--rehang-wash)}
 
 .pdp__actions{margin-top:22px;display:grid;gap:10px}
 .pdp__sublinks{display:flex;gap:18px;margin-top:14px}
 
 /* =========================================================================
-   PRE-OWNED / RELOOP surfaces
+   PRE-OWNED / REHANG surfaces
    ========================================================================= */
-.wash{background:var(--reloop-wash)}
+.wash{background:var(--rehang-wash)}
 
 .sheet-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.28);z-index:90}
 .sheet{
@@ -554,7 +554,7 @@ body.has-wt{padding-bottom:44px}
 /* annotation callouts for the deck */
 .note{
   border-left:2px solid var(--black);
-  background:var(--reloop-wash);
+  background:var(--rehang-wash);
   padding:13px 16px;margin:20px 0;
   font-size:var(--fs-micro);line-height:1.65;color:var(--grey-900);max-width:70ch;
 }
@@ -598,7 +598,7 @@ body.has-wt{padding-bottom:44px}
   padding:5px 8px;font-size:var(--fs-nano);letter-spacing:var(--tr-wide);text-transform:uppercase;
 }
 .sheet__lede{font-size:var(--fs-small);line-height:1.6;margin:0 0 6px}
-.sheet__ask{margin-top:26px;padding:20px;background:var(--reloop-wash)}
+.sheet__ask{margin-top:26px;padding:20px;background:var(--rehang-wash)}
 .sheet__ask .u-label{margin:0 0 6px}
 .sheet__ask .u-meta{display:block;margin-bottom:16px;line-height:1.6}
 
@@ -612,7 +612,7 @@ body.has-wt{padding-bottom:44px}
 .facts-list b{font-weight:var(--w-reg)}
 
 /* --- pre-owned landing --- */
-.po-hero{padding:34px 24px 26px;background:var(--reloop-wash)}
+.po-hero{padding:34px 24px 26px;background:var(--rehang-wash)}
 .po-hero__h{font-family:var(--display);font-weight:400;font-size:26px;line-height:1.35;margin:8px 0 18px;max-width:30ch}
 .po-pillars{display:flex;gap:20px}
 .po-pillars a{font-size:var(--fs-base);letter-spacing:.06em;text-transform:uppercase;color:var(--grey-400);padding-bottom:3px;border-bottom:1px solid transparent}
@@ -680,7 +680,7 @@ body.has-wt{padding-bottom:44px}
 .flowmap__l li{counter-increment:f;font-size:var(--fs-micro);padding:7px 0 7px 22px;position:relative;line-height:1.5}
 .flowmap__l li::before{content:counter(f);position:absolute;left:0;font-size:var(--fs-nano);color:var(--grey-400)}
 .flowmap__l span{display:block;font-size:var(--fs-nano);color:var(--grey-500);margin-top:2px}
-.payout{margin-top:22px;padding:18px;background:var(--reloop-wash);text-align:center}
+.payout{margin-top:22px;padding:18px;background:var(--rehang-wash);text-align:center}
 .payout__amt{font-size:30px;font-weight:300;margin:8px 0 8px}
 .payout .u-meta{line-height:1.6}
 
@@ -689,7 +689,7 @@ body.has-wt{padding-bottom:44px}
 .sys{background:var(--white);display:grid;grid-template-columns:120px 1fr;gap:18px;padding:17px 18px;align-items:start}
 .sys__state{font-size:var(--fs-nano);letter-spacing:var(--tr-wide);text-transform:uppercase;color:var(--grey-400);padding-top:2px}
 .sys.new .sys__state{color:var(--black);font-weight:500}
-.sys.new{background:var(--reloop-wash)}
+.sys.new{background:var(--rehang-wash)}
 .sys__n{font-size:var(--fs-small);letter-spacing:var(--tr-tight)}
 .sys__w{font-size:var(--fs-micro);color:var(--grey-500);line-height:1.6;margin-top:4px}
 .scoreline{display:flex;align-items:baseline;gap:12px;padding:22px 0 4px}

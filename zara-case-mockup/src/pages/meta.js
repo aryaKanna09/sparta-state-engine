@@ -27,7 +27,7 @@ function index(manifest) {
 <main class="ix">
   <p class="u-eyebrow">TEAM FIREWORKS &middot; BIC x ZARA CASE COMPETITION</p>
   <h1>${COPY.featureName}</h1>
-  <p class="ix__lede">${COPY.reloopTagline} A shopper hits a sold-out size, and instead of a dead end Zara asks the
+  <p class="ix__lede">${COPY.rehangTagline} A shopper hits a sold-out size, and instead of a dead end Zara asks the
   people who already own that exact garment whether they want to sell it — grading and pricing it for them. Click
   straight through the flow below, or start at step 01 and use the bar at the bottom of every screen.</p>
 

@@ -6,7 +6,7 @@
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return [].slice.call((r || document).querySelectorAll(s)); };
   var money = function (n) { return '$' + n.toFixed(2); };
-  var KEY = 'reloop.bag';
+  var KEY = 'rehang.bag';
 
   /* ------------------------------------------------------------- bag state */
   function read() {
@@ -153,7 +153,7 @@
     // the sold-out size opens the pre-owned sheet
     document.addEventListener('click', function (e) {
       var o = e.target.closest && e.target.closest('[data-open-sheet]');
-      if (o) { e.preventDefault(); window.location.href = 'pdp-reloop.html'; return; }
+      if (o) { e.preventDefault(); window.location.href = 'pdp-rehang.html'; return; }
       var c = e.target.closest && e.target.closest('[data-close-sheet]');
       if (c) { e.preventDefault(); window.location.href = 'pdp.html'; }
     });

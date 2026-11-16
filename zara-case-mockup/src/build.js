@@ -23,11 +23,11 @@ const MANIFEST = [
     blurb: 'The dead end. M is struck through. Today that is where the journey ends.',
     note: 'The moment of highest intent and guaranteed disappointment.' },
 
-  { file: 'pdp-reloop.html', chrome: 'zara.com/us/en/textured-tweed-blazer-p02757397.html?preowned=M', group: 'buyer', title: 'Pre-owned in your size', render: buyer.pdpSheet,
+  { file: 'pdp-rehang.html', chrome: 'zara.com/us/en/textured-tweed-blazer-p02757397.html?preowned=M', group: 'buyer', title: 'Pre-owned in your size', render: buyer.pdpSheet,
     blurb: 'The intervention: three graded, priced units of this exact product code, in the size that is gone.',
     note: 'The dead end becomes a shelf.' },
 
-  { file: 'reloop-request.html', chrome: 'zara.com/us/en/preowned/request-placed', group: 'buyer', title: 'Asking the owners', render: buyer.reloopRequest,
+  { file: 'rehang-request.html', chrome: 'zara.com/us/en/preowned/request-placed', group: 'buyer', title: 'Asking the owners', render: buyer.rehangRequest,
     blurb: 'If nothing is listed, the click becomes a demand signal sent to the 14 people who own it.',
     note: 'Demand creates the supply.' },
 
@@ -85,7 +85,7 @@ function build() {
   // its contents page at web-index.html.
   fs.writeFileSync(
     path.join(OUT, 'web-index.html'),
-    L.doc({ title: 'ZARA RELOOP — website walkthrough', body: meta.index(steps) })
+    L.doc({ title: 'ZARA REHANG — website walkthrough', body: meta.index(steps) })
   );
 
   // favicon: the wordmark Z
