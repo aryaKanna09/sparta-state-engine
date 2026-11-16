@@ -1,4 +1,4 @@
-"""ZARA RELOOP - US 3-year financial model. Builds an .xlsx with live formulas.
+"""ZARA REHANG - US 3-year financial model. Builds an .xlsx with live formulas.
 Usage: python3 build_model.py out.xlsx [scenario 1|2|3] [key=value overrides applied to the Base column]"""
 import sys
 from openpyxl import Workbook
@@ -22,17 +22,17 @@ A = [
  ("items", "Items listed per completed lister-session (the closet view shows every priced item)", "#", 1.2, 1.5, 2.0, "ESTIMATE. WRAP: 26% of a wardrobe (31 of 118 items) unworn in the past year."),
  ("organic", "Organic (un-prompted) listings as % of prompted", "%", 0.10, 0.15, 0.25, "ESTIMATE"),
  ("sell", "Sell-through inside the 30-day offer window", "%", 0.45, 0.60, 0.70, "Zara median 24 days to sell across marketplaces; 11 days on Vinted France. Priced-to-market by the engine."),
- ("price", "Average pre-owned selling price", "$", 30.0, 36.0, 40.0, "Zara median resale ~$20 all categories; ReLoop price floor $20 skews to blazers/coats/dresses/knits. Mock listings average ~$44."),
+ ("price", "Average pre-owned selling price", "$", 30.0, 36.0, 40.0, "Zara median resale ~$20 all categories; ReHang price floor $20 skews to blazers/coats/dresses/knits. Mock listings average ~$44."),
  ("H2", "FEES CHARGED"),
  ("fee_fix", "Buyer fee - fixed part", "$", 1.0, 1.0, 1.0, "CONFIRMED. Zara Pre-Owned US terms: $1 + 5%."),
  ("fee1", "Buyer fee - % of price, Year 1", "%", 0.05, 0.05, 0.05, "CONFIRMED current fee."),
- ("fee2", "Buyer fee - % of price, Year 2 (verified-service fee test)", "%", 0.05, 0.08, 0.10, "DESIGN. Benchmarks: COS Resell 10%, Vestiaire 12%, eBay 13.6%, Poshmark 20%."),
- ("fee3", "Buyer fee - % of price, Year 3", "%", 0.05, 0.10, 0.10, "DESIGN"),
+ ("fee2", "Buyer fee - % of price, Year 2 (verified-service fee)", "%", 0.05, 0.15, 0.15, "DESIGN. Benchmarks: COS Resell 10%, Vestiaire 12%, eBay 13.6%, Poshmark 20%."),
+ ("fee3", "Buyer fee - % of price, Year 3", "%", 0.05, 0.15, 0.15, "DESIGN: set so each sale covers its own cost to serve; still below eBay (13.6% + fees) and Poshmark (20%)."),
  ("ship_fee", "Shipping charged to the buyer", "$", 4.95, 4.95, 4.95, "DESIGN: charged at cost, as Zara Pre-Owned does today (buyer pays the label). Zara standard delivery is $4.95; Poshmark charges buyers $8.27."),
  ("mail_fee", "Mail-in deduction charged to the seller (store drop-off is free)", "$", 4.95, 4.95, 4.95, "DESIGN mirroring Zara's returns policy: mail return $4.95, in-store free (CONFIRMED)."),
  ("H3", "VARIABLE COST TO SERVE"),
  ("parcel", "Parcel cost per leg (1 lb poly mailer)", "$", 8.50, 6.50, 5.50, "USPS Ground Advantage commercial 1 lb $7.33-9.29 list (Oct 2026); Pitney Bowes US average $9.09 per parcel; base assumes a large-shipper negotiated rate (ESTIMATE)."),
- ("drop", "Share of sellers who drop off in store", "%", 0.40, 0.50, 0.60, "PayPal/TRC: 54% prefer in-person drop-off; limited by 102 US stores."),
+ ("drop", "Share of sellers who drop off in store", "%", 0.60, 0.80, 0.85, "DESIGN: store drop-off is free and mail-in costs $4.95, steering ~80% of sellers to 102 US stores. PayPal/TRC: 54% already prefer in-person drop-off."),
  ("lab_min", "Staff minutes per item (verify 3 + pack/label 3)", "min", 8.0, 6.0, 4.5, "Returns benchmarks ~4 min per RMA (ShipMonk/Racklify); inspection 1-3 min."),
  ("lab_rate", "Loaded labour cost per minute", "$", 0.46, 0.40, 0.37, "Zara US postings $16-21/hr (avg $18.21-18.50) x 1.30 BLS retail benefits load = $24.10/hr."),
  ("pack", "Packaging per parcel", "$", 0.40, 0.15, 0.10, "Poly mailer $0.04-0.11 + label."),
@@ -45,7 +45,7 @@ A = [
  ("exc_cost", "Cost per exception", "$", 14.0, 12.0, 10.0, "ESTIMATE: extra leg + re-grade + goodwill."),
  ("cs", "Customer service per unit", "$", 0.50, 0.30, 0.20, "ESTIMATE"),
  ("H4", "LOOP EFFECTS (where the value is)"),
- ("cred_share", "Share of sellers taking payout as Zara credit", "%", 0.45, 0.60, 0.70, "Credit is instant and carries a bonus. Benchmarks: brand trade-in programmes are 100% credit; The RealReal +5%, Fashionphile +10% for credit."),
+ ("cred_share", "Share of sellers taking payout as Zara credit", "%", 0.45, 0.60, 0.70, "Credit is instant and worth 10% more than cash. Benchmarks: brand trade-in programmes are 100% credit; The RealReal +5%, Fashionphile +10% for credit."),
  ("cred_bonus", "Bonus for choosing Zara credit over cash", "%", 0.10, 0.10, 0.10, "DESIGN, benchmark above."),
  ("breakage", "Credit never redeemed", "%", 0.03, 0.05, 0.08, "Weak sourcing: ~6% of gift cards never used; Mercator ~3%."),
  ("incr", "Share of credit redemptions that are incremental orders", "%", 0.25, 0.40, 0.55, "ASSUMPTION - the single most important number to measure in the pilot (hold-out test)."),
@@ -66,7 +66,7 @@ A = [
  ("ntb_conv", "New-to-brand buyers who buy new within 12 months", "%", 0.10, 0.25, 0.30, "Trove: 10% within 6 months, up to 30% within a year."),
  ("ntb_spend", "Their first-year new-merchandise spend", "$", 120.0, 150.0, 180.0, "ESTIMATE"),
  ("u_per_buyer", "Pre-owned units per buyer per year", "#", 1.5, 1.5, 1.5, "ESTIMATE; ThredUp 3.7 orders per active buyer."),
- ("bonus_face", "Average dynamic demand bonus paid (bucket A listings that sell)", "$", 5.0, 4.0, 4.0, "DESIGN. Range $0-10, weighted average ~$5 on the CreditEngine sheet. Benchmarks: Lululemon $5/10/25, Levi's $5-30, Madewell $20."),
+ ("bonus_face", "Average demand bonus paid (rule 2: sold-out items that sell)", "$", 5.0, 4.0, 4.0, "DESIGN. Rule 2: if the item is sold out, the seller also gets a demand bonus in Zara credit (up to $10; weighted average ~$5 on the CreditEngine sheet). Benchmarks: Lululemon $5/10/25, Levi's $5-30, Madewell $20."),
  ("H5", "FIXED COST AND CAPITAL"),
  ("fix1", "Incremental fixed operating cost, Year 1", "$m", 1.2, 1.0, 1.0, "ESTIMATE: pricing/ML (3 FTE), ops programme (3), trust & safety/CS (4), data licences, cloud. Incremental to today's Pre-Owned team."),
  ("fix2", "Incremental fixed operating cost, Year 2", "$m", 2.0, 1.6, 1.6, "ESTIMATE"),
@@ -83,8 +83,8 @@ A = [
 REV = {
  "cust": (5.0, 7.0, 9.0), "cust_g": (0.04, 0.06, 0.08), "reach": (0.50, 0.55, 0.58), "pr1": (3, 4, 4), "pr2": (4, 6, 6),
  "conv": (0.008, 0.015, 0.03), "conv_up": (0.0, 0.10, 0.10), "complete": (0.60, 0.65, 0.70), "items": (1.2, 1.4, 1.5),
- "organic": (0.10, 0.15, 0.15), "sell": (0.45, 0.55, 0.60), "price": (26.0, 30.0, 36.0), "fee2": (0.05, 0.10, 0.10), "fee3": (0.05, 0.10, 0.10),
- "ship_fee": (6.50, 6.50, 6.50), "parcel": (7.50, 6.50, 6.00), "drop": (0.45, 0.50, 0.55), "lab_min": (10.0, 7.0, 6.0),
+ "organic": (0.10, 0.15, 0.15), "sell": (0.45, 0.55, 0.60), "price": (26.0, 30.0, 36.0), "fee2": (0.05, 0.15, 0.15), "fee3": (0.05, 0.15, 0.15),
+ "ship_fee": (6.50, 6.50, 6.50), "parcel": (7.50, 6.50, 6.00), "drop": (0.60, 0.80, 0.85), "lab_min": (10.0, 7.0, 6.0),
  "lab_rate": (0.43, 0.40, 0.40), "pack": (0.25, 0.15, 0.12), "pay_pct": (0.025, 0.022, 0.020), "pay_fix": (0.25, 0.20, 0.15),
  "u_per_acct": (1.2, 1.3, 1.5), "exc_rate": (0.06, 0.04, 0.04), "exc_cost": (13.0, 12.0, 12.0), "cs": (0.40, 0.30, 0.30),
  "cred_share": (0.55, 0.70, 0.70), "breakage": (0.04, 0.05, 0.05), "incr": (0.30, 0.40, 0.40), "over": (0.40, 0.50, 0.50),
@@ -96,7 +96,7 @@ REV = {
 SRC = {
  "cust": "ESTIMATE, plausible range 4-13M. Inditex does not disclose US sales or customers. Order-based: ECDB US online ~$1.45bn / $90-120 per order / 2-3 orders a year = 4-8M online buyers; app-based: 11-13M.",
  "conv": "ANALOGY, no direct benchmark exists. Passive benchmark: 2.3% of Shein Exchange sign-ups listed anything in year one. Push: e-commerce CTR 3.1-3.8%, abandoned-cart order rate 3.3%, back-in-stock 5.3-6.7%. Base 1.5% per prompt x 6 prompts gives roughly 5% of customers listing in a year.",
- "price": "Zara's typical resale price is low: ~EUR 12.80 on Vinted (1.1M sales), ~$20 median across marketplaces. ReLoop has a $20 floor and skews to jackets, coats and dresses, so $30 base. $36 only in the upside.",
+ "price": "Zara's typical resale price is low: ~EUR 12.80 on Vinted (1.1M sales), ~$20 median across marketplaces. ReHang has a $20 floor and skews to jackets, coats and dresses, so $30 base. $36 only in the upside.",
  "sell": "Zara median 24 days to sell across marketplaces, 11 days on Vinted France. Zalando Pre-owned: 62% of the range sells within 7 days (company figure, 2026).",
  "att_rate": "ASSUMPTION. Zalando Pre-owned (2026): 40% of customers buying pre-owned add a NEW item to the same order. We count a quarter of that as incremental.",
  "ntb": "ASSUMPTION. No brand publishes this; vendor claims range from 40% to 80% (Trove, Archive) and contradict each other. 20% is half the lowest vendor figure.",
@@ -114,7 +114,7 @@ def build(path, scenario=2, over=None):
     bold = Font(bold=True); hdr = PatternFill("solid", fgColor="111111"); hf = Font(bold=True, color="FFFFFF")
     sec = PatternFill("solid", fgColor="E8E8E8"); inp = Font(color="0000CC")
     ws = wb.active; ws.title = "Assumptions"
-    ws["A1"] = "ZARA RELOOP - US financial model. Blue = input. Change the scenario cell to flip every sheet."; ws["A1"].font = Font(bold=True, size=13)
+    ws["A1"] = "ZARA REHANG - US financial model. Blue = input. Change the scenario cell to flip every sheet."; ws["A1"].font = Font(bold=True, size=13)
     ws["B2"] = "Scenario (1 = Conservative, 2 = Base, 3 = Upside)"; ws["C2"] = scenario; ws["C2"].font = Font(bold=True, color="0000CC", size=13)
     for i, h in enumerate(["key", "Assumption", "Unit", "Conservative", "Base", "Upside", "SELECTED", "Source / confidence"], 1):
         c = ws.cell(row=4, column=i, value=h); c.font = hf; c.fill = hdr
@@ -203,7 +203,7 @@ def build(path, scenario=2, over=None):
     line("cl_m", "  margin on those sales", u("cl_sales") + "*" + R["cm"])
     line("cfac", "Cost of $1 of bonus credit", "(1-" + R["breakage"] + ")*(" + R["incr"] + "*" + R["cogs"] + "+(1-" + R["incr"] + "))", note="42c if the redemption is incremental, 100c if it discounts a purchase that would have happened anyway.", fmt="0.000")
     line("pb", "Credit-payout bonus cost", "-" + R["cred_share"] + "*" + u("price") + "*" + R["cred_bonus"] + "*" + u("cfac"))
-    line("db", "Dynamic demand bonus cost", "-" + R["shA"] + "*" + R["bonus_face"] + "*" + u("cfac"))
+    line("db", "Demand bonus cost (rule 2: sold-out items)", "-" + R["shA"] + "*" + R["bonus_face"] + "*" + u("cfac"))
     line("bk_sales", "Incremental new sales: saved baskets + add-ons", R["shA"] + "*" + R["save_rate"] + "*" + R["save_val"] + "+" + R["att_rate"] + "*" + R["att_val"])
     line("bk_m", "  margin on those sales", u("bk_sales") + "*" + R["cm"])
     line("nb_sales", "Incremental new sales: new-to-brand buyers", R["ntb"] + "*" + R["ntb_conv"] + "*" + R["ntb_spend"] + "/" + R["u_per_buyer"])
@@ -215,8 +215,8 @@ def build(path, scenario=2, over=None):
     line("net", "NET CONTRIBUTION PER UNIT", u("txn") + "+" + u("cl_m") + "+" + u("pb") + "+" + u("db") + "+" + u("bk_m") + "+" + u("nb_m") + "+" + u("can_m"), b=True)
     line("incr_sales", "Net incremental new-merchandise sales per unit", u("cl_sales") + "+" + u("bk_sales") + "+" + u("nb_sales") + "+" + u("can_sales"), b=True)
     line("zrev", "Net incremental Zara revenue per unit (platform revenue + net new sales)", u("rev") + "+" + u("incr_sales"), b=True)
-    line("credit_face", "Zara credit issued per unit (payout credit + bonuses)", R["cred_share"] + "*" + u("price") + "*(1+" + R["cred_bonus"] + ")+" + R["shA"] + "*" + R["bonus_face"])
-    line("bonus_face_u", "Bonus credit face value per unit", R["cred_share"] + "*" + u("price") + "*" + R["cred_bonus"] + "+" + R["shA"] + "*" + R["bonus_face"])
+    line("credit_face", "Zara credit issued per unit (payouts taken as credit incl. the 10% extra, + demand bonus)", R["cred_share"] + "*" + u("price") + "*(1+" + R["cred_bonus"] + ")+" + R["shA"] + "*" + R["bonus_face"])
+    line("bonus_face_u", "Bonus credit face value per unit (10% extra + demand bonus)", R["cred_share"] + "*" + u("price") + "*" + R["cred_bonus"] + "+" + R["shA"] + "*" + R["bonus_face"])
     ue.column_dimensions["A"].width = 70
     for col in "BCD": ue.column_dimensions[col].width = 12
     ue.column_dimensions["E"].width = 110
@@ -267,7 +267,7 @@ def build(path, scenario=2, over=None):
     mh("CONTRIBUTION ($)")
     ml("txn", "Transaction contribution", *per("x", "@%d*%s" % (M["units"], UE("txn", "#"))))
     ml("loopm", "Margin on incremental new sales", *per("x", "@%d*(%s+%s+%s)" % (M["units"], UE("cl_m", "#"), UE("bk_m", "#"), UE("nb_m", "#"))))
-    ml("inc", "Incentive cost (credit bonus + demand bonus)", *per("x", "@%d*(%s+%s)" % (M["units"], UE("pb", "#"), UE("db", "#"))))
+    ml("inc", "Incentive cost (10% extra on credit + demand bonus)", *per("x", "@%d*(%s+%s)" % (M["units"], UE("pb", "#"), UE("db", "#"))))
     ml("canm", "Margin lost to cannibalisation", *per("x", "@%d*%s" % (M["units"], UE("can_m", "#"))))
     ml("vc", "VARIABLE CONTRIBUTION", *per("x", "@%d+@%d+@%d+@%d" % (M["txn"], M["loopm"], M["inc"], M["canm"])), b=True)
     ml("fix", "Incremental fixed operating cost", "-" + R["fix1"] + "*1000000", "-" + R["fix2"] + "*1000000", "-" + R["fix3"] + "*1000000")
@@ -298,20 +298,20 @@ def build(path, scenario=2, over=None):
 
     # ---------- Cost to serve vs a central-DC managed model
     cs = wb.create_sheet("CostToServe")
-    cs["A1"] = "Cost to put one verified pre-owned garment in a buyer's hands ($): ReLoop store model vs a central-warehouse managed-resale model"; cs["A1"].font = Font(bold=True, size=13)
-    for i, h in enumerate(["Line", "ReLoop (stores, sell first)", "Central DC (intake first)", "Note"], 1):
+    cs["A1"] = "Cost to put one verified pre-owned garment in a buyer's hands ($): ReHang store model vs a central-warehouse managed-resale model"; cs["A1"].font = Font(bold=True, size=13)
+    for i, h in enumerate(["Line", "ReHang (stores, sell first)", "Central DC (intake first)", "Note"], 1):
         c = cs.cell(row=3, column=i, value=h); c.font = hf; c.fill = hdr
     rows = [
-     ("Inbound parcel", "=(1-%s)*%s" % (R["drop"], R["parcel"]), "=%s" % R["parcel"], "ReLoop: half arrive by hand at a store. DC: every item is mailed in."),
-     ("Receive, inspect, grade", "=(%s-3)*%s" % (R["lab_min"], R["lab_rate"]), "=4*0.35", "ReLoop: staff minutes less the 3 used for packing. DC wage assumed $0.35/min loaded."),
-     ("Photograph and list", "=0", "=3*0.35", "ReLoop: the seller's 4 guided photos are the listing."),
-     ("Acceptance rate", "=1", "=0.7", "ThredUp accepts roughly 50-80% of a kit; ReLoop only receives items that have already sold."),
+     ("Inbound parcel", "=(1-%s)*%s" % (R["drop"], R["parcel"]), "=%s" % R["parcel"], "ReHang: half arrive by hand at a store. DC: every item is mailed in."),
+     ("Receive, inspect, grade", "=(%s-3)*%s" % (R["lab_min"], R["lab_rate"]), "=4*0.35", "ReHang: staff minutes less the 3 used for packing. DC wage assumed $0.35/min loaded."),
+     ("Photograph and list", "=0", "=3*0.35", "ReHang: the seller's 4 guided photos are the listing."),
+     ("Acceptance rate", "=1", "=0.7", "ThredUp accepts roughly 50-80% of a kit; ReHang only receives items that have already sold."),
      ("Intake cost per ACCEPTED item", "=(B4+B5+B6)/B7", "=(C4+C5+C6)/C7", ""),
-     ("Storage until sold", "=0", "=2*0.5", "DC: ~2 months at $0.50 per item-month (ESTIMATE). ReLoop: the garment stays in the seller's wardrobe until it sells."),
+     ("Storage until sold", "=0", "=2*0.5", "DC: ~2 months at $0.50 per item-month (ESTIMATE). ReHang: the garment stays in the seller's wardrobe until it sells."),
      ("Pick, pack", "=3*%s+%s" % (R["lab_rate"], R["pack"]), "=2*0.35+%s" % R["pack"], ""),
      ("Outbound parcel", "=%s" % R["parcel"], "=%s" % R["parcel"], ""),
      ("COST TO SERVE PER UNIT SOLD", "=B8+B9+B10+B11", "=C8+C9+C10+C11", ""),
-     ("ReLoop saving vs central DC", "=1-B12/C12", "", "Share of logistics cost avoided by using stores and selling before intake."),
+     ("ReHang saving vs central DC", "=1-B12/C12", "", "Share of logistics cost avoided by using stores and selling before intake."),
     ]
     for i, rw in enumerate(rows):
         for j, v in enumerate(rw):
@@ -329,7 +329,7 @@ def build(path, scenario=2, over=None):
     for j, p in enumerate((82, 63, 46, 27)): sn.cell(row=4, column=3 + j, value=p)
     sn.cell(row=4, column=1, value="Sale price")
     ch = [
-     ("ZARA RELOOP", "0% seller fee + dynamic Zara-credit bonus (shown: $4 average) + 10% if paid in credit", "=({p}+4)*1.1", "Zara prices from comps, staff verify, store ships. Seller: 4 photos + one drop-off."),
+     ("ZARA REHANG", "Rule 1: 100% of the sale price, paid as cash or as Zara credit worth 10% more (credit shown). Rule 2: plus a demand bonus in Zara credit if the item is sold out (not shown)", "={p}*1.1", "Zara prices from comps, staff verify, store ships. Seller: 4 photos + one drop-off."),
      ("Zara Pre-Owned today", "0% seller fee", "={p}", "Seller prices (guidance only), self-declared condition, seller packs and ships."),
      ("Vinted", "0% seller fee (buyer pays 5% + $0.70)", "={p}", "Seller prices, ships. No Zara item data."),
      ("Depop", "0% selling fee + 3.3% + $0.45 processing", "={p}*(1-0.033)-0.45", "Seller prices, ships. Owned by eBay since July 2026."),

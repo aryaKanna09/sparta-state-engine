@@ -22,7 +22,7 @@ def run(tag, scn=2, over=None):
 out = {"scen": {n: run(n, i) for i, n in ((1, "conservative"), (2, "base"), (3, "upside"))}}
 levers = {
  "current_policy_fee5_ship4.95_credit50": {"fee2": 0.05, "fee3": 0.05, "ship_fee": 4.95, "cred_share": 0.50},
- "fee_stays_5pct": {"fee2": 0.05, "fee3": 0.05},
+ "fee_10pct": {"fee2": 0.10, "fee3": 0.10},
  "ship_subsidised_4.95": {"ship_fee": 4.95},
  "credit_share_50pct": {"cred_share": 0.50},
  "incrementality_25pct": {"incr": 0.25},
@@ -35,7 +35,7 @@ levers = {
  "parcel_5.50": {"parcel": 5.50},
  "price_36": {"price": 36.0},
  "price_24": {"price": 24.0},
- "dropoff_70pct": {"drop": 0.70},
+ "dropoff_50pct": {"drop": 0.50},
  "no_demand_bonus": {"bonus_face": 0.0},
  "labour_12min": {"lab_min": 12.0},
  "attach_zalando_20pct": {"att_rate": 0.20},

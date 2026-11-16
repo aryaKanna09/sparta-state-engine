@@ -13,7 +13,7 @@ rows = [("Units sold, Year 3", "units", 3, "#,##0"), ("Units sold, 3 years", "un
         ("Net incremental Zara revenue, 3 years ($)", "zrev", 4, "#,##0"), ("Variable contribution, Year 3 ($)", "vc", 3, "#,##0"),
         ("Operating contribution, Year 1 ($)", "op", 1, "#,##0"), ("Operating contribution, Year 2 ($)", "op", 2, "#,##0"), ("Operating contribution, Year 3 ($)", "op", 3, "#,##0"),
         ("Capex ($)", "capex", 0, "#,##0"), ("Cumulative cash after Year 3 ($)", "cum", 3, "#,##0"), ("3-year NPV ($)", "npv", 0, "#,##0"),
-        ("Zara credit issued, Year 3 ($ face)", "credit", 3, "#,##0"), ("Bonus credit, Year 3 ($ face)", "bonus", 3, "#,##0"),
+        ("Zara credit issued, Year 3 ($ face)", "credit", 3, "#,##0"), ("Bonus credit (10% extra + demand bonus), Year 3 ($ face)", "bonus", 3, "#,##0"),
         ("Items per store per day, Year 3", "perstore", 3, "0.0"), ("Net CO2e avoided, 3 years (t)", "co2", 4, "#,##0")]
 for i, h in enumerate(["Metric", "Conservative", "Base (recommended design)", "Upside"], 1):
     c = sc.cell(row=3, column=i, value=h); c.font = hf; c.fill = hdr
@@ -33,11 +33,11 @@ for i, h in enumerate(["Change", "Net contribution / unit Y3 ($)", "Units sold Y
 b = d["scen"]["base"]
 allr = [("BASE", {"net_y3": b["unit"]["net"][2], "units_y3": b["model"]["units"][3], "op_y3": b["model"]["op"][3], "cum": b["model"]["cum"][3], "npv": b["model"]["npv"][0], "zrev_y3": b["model"]["zrev"][3]})] + list(d["levers"].items())
 names = {"current_policy_fee5_ship4.95_credit50": "Today's policy: fee stays $1 + 5%, shipping $4.95, half take credit",
- "fee_stays_5pct": "Fee stays at $1 + 5% (no verified-service fee)", "ship_subsidised_4.95": "Shipping charged at $4.95 instead of cost",
+ "fee_10pct": "Buyer fee $1 + 10% (base $1 + 15%)", "ship_subsidised_4.95": "Shipping charged at $4.95 instead of cost",
  "credit_share_50pct": "Only 50% take Zara credit", "incrementality_25pct": "Credit incrementality 25% (base 40%)", "incrementality_55pct": "Credit incrementality 55%",
  "cannibalisation_x1.5": "Cannibalisation 1.5x base", "cannibalisation_x0.5": "Cannibalisation 0.5x base", "conversion_0.8pct": "Prompt conversion 0.8% (base 1.5%)",
  "conversion_3pct": "Prompt conversion 3%", "parcel_8.50": "Parcel cost $8.50 (list rate), fee unchanged", "parcel_5.50": "Parcel cost $5.50",
- "price_36": "Average sale $36 (base $30)", "price_24": "Average sale $24", "dropoff_70pct": "70% drop off in store", "no_demand_bonus": "No dynamic demand bonus (same volume assumed)",
+ "price_36": "Average sale $36 (base $30)", "price_24": "Average sale $24", "dropoff_50pct": "Only 50% drop off in store (base 80%)", "no_demand_bonus": "No demand bonus on sold-out items (same volume assumed)",
  "labour_12min": "Staff time 12 min per item (base 7)", "attach_zalando_20pct": "Incremental new add-on in 20% of orders (Zalando observes 40% mixed baskets)"}
 for i, (k, v) in enumerate(allr):
     se.cell(row=4 + i, column=1, value=names.get(k, k)).font = bold if k == "BASE" else Font()
@@ -45,11 +45,11 @@ for i, (k, v) in enumerate(allr):
         c = se.cell(row=4 + i, column=2 + j, value=v[kk]); c.number_format = "0.00" if kk == "net_y3" else "#,##0"
 se.column_dimensions["A"].width = 66
 for col in "BCDEFG": se.column_dimensions[col].width = 26
-tmp = os.path.join(S, "ZARA_ReLoop_Financial_Model.xlsx"); wb.save(tmp)
+tmp = os.path.join(S, "ZARA_ReHang_Financial_Model.xlsx"); wb.save(tmp)
 outdir = os.path.join(S, "final"); os.makedirs(outdir, exist_ok=True)
 subprocess.run(["soffice", "--headless", "--convert-to", "xlsx", "--outdir", outdir, tmp], check=True, capture_output=True, timeout=180)
-shutil.copy(os.path.join(outdir, "ZARA_ReLoop_Financial_Model.xlsx"), "ZARA_ReLoop_Financial_Model.xlsx")
-chk = load_workbook("ZARA_ReLoop_Financial_Model.xlsx", data_only=True)
+shutil.copy(os.path.join(outdir, "ZARA_ReHang_Financial_Model.xlsx"), "ZARA_ReHang_Financial_Model.xlsx")
+chk = load_workbook("ZARA_ReHang_Financial_Model.xlsx", data_only=True)
 print(chk.sheetnames); errs = 0
 for ws in chk:
     for row in ws.iter_rows():
