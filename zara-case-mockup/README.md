@@ -89,3 +89,11 @@ snapshots — which is accurate, since all three listings are the same SKU.
 To swap in different garments, drop a JPG into `public/assets/img/` using the name
 referenced in `src/data.js` and rebuild. Any missing file degrades to a styled
 placeholder rather than a broken image, so the deck never shows a broken tile.
+
+
+## Financial model
+
+`model/ZARA_ReLoop_Financial_Model.xlsx` is the three-year US model behind the case (live formulas; `Assumptions!C2` switches Conservative / Base / Upside).
+`model/build_model.py` generates it, `model/run_model.py` recalculates every scenario and lever with LibreOffice, `model/finalize.py` assembles the workbook.
+
+    cd model && python3 run_model.py /tmp/reloop && python3 finalize.py /tmp/reloop
