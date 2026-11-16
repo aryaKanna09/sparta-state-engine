@@ -1,16 +1,17 @@
 // ZARA ReLoop - BIC x ZARA case competition, Round 1 deck.
 // Brand: black / white / greys. Headings in Bodoni Moda (Didone, the style of Zara's wordmark);
 // body in Arial (neo-grotesque, close to Zara's UI). Strict grid: 0.5" margins, 0.2" gutters.
+// Every slide: one-line title + one-line kicker (NGC format), content, sources, section tracker.
 const pptxgen = require("pptxgenjs");
 const D = __dirname + "/";
-const IMG = D + "img/";
+const IMG = D + "img/", IC = D + "img/ic/";
 
 const BLACK = "111111", INK = "1A1A1A", G9 = "2B2B2B", G8 = "3D3D3D", G6 = "6B6B6B", G5 = "8A8A8A",
   G4 = "B5B5B5", G3 = "D6D6D6", G2 = "E8E8E8", G1 = "F4F4F4", WHITE = "FFFFFF";
 const HEAD = "Bodoni Moda", BODY = "Arial";
 const W = 13.333, H = 7.5, M = 0.5, GUT = 0.2, CW = W - 2 * M;
-const TOP = 1.6, MAIN_BOTTOM = 5.95, TK_Y = 6.1, TK_H = 0.58, APX_BOTTOM = 6.62;
-const PHONE = 1900 / 860, REAL = 2868 / 1320, LOGO = 139 / 361;
+const TOP = 1.5, MAIN_BOTTOM = 5.95, TK_Y = 6.1, TK_H = 0.58, APX_BOTTOM = 6.62;
+const PHONE = 1900 / 860, REAL = 2868 / 1320, LOGO = 139 / 361, NOTIF = 312 / 1218;
 const LS = 1.12;
 
 const pres = new pptxgen();
@@ -24,7 +25,7 @@ const cols = (n, x0 = M, w0 = CW) => { const w = (w0 - GUT * (n - 1)) / n; retur
 const SECTIONS = ["PROBLEM", "RELOOP", "INSIGHTS", "ECONOMICS", "PILOT"];
 let page = 1;
 
-const stop = t => { const s = t.trim(); return /[.!?]$/.test(s) || /\*\*$/.test(s) && /[.!?]\*\*$/.test(s) ? s : (/\*\*$/.test(s) ? s.replace(/\*\*$/, ".**") : s + "."); };
+const stop = t => { const s = t.trim(); if (/[.!?]$/.test(s) || /[.!?]\*\*$/.test(s)) return s; return /\*\*$/.test(s) ? s.replace(/\*\*$/, ".**") : s + "."; };
 
 function txt(s, t, o) { s.addText(t, Object.assign({ fontFace: BODY, color: INK, margin: 0, isTextBox: true, valign: "top", lineSpacingMultiple: LS }, o)); }
 function rich(str, base = {}) {
@@ -49,12 +50,16 @@ function bullets(s, items, x, y, w, h, size = 11, gap = 6) {
   txt(s, runs, { x, y, w, h });
 }
 function label(s, t, x, y, w, color = G6, align = "left") { txt(s, t, { x, y, w, h: 0.22, fontSize: 9, bold: true, color, charSpacing: 2.5, align }); }
+function icon(s, name, x, y, d, dark = true) {
+  s.addShape(pres.shapes.OVAL, { x, y, w: d, h: d, fill: { color: dark ? BLACK : G2 }, line: { color: dark ? BLACK : G3 } });
+  const p = d * 0.5; s.addImage({ path: IC + name + (dark ? "-w.png" : "-k.png"), x: x + (d - p) / 2, y: y + (d - p) / 2, w: p, h: p });
+}
 
-function frame(s, sec, kicker, title, sources, appendix) {
+function frame(s, sec, title, kicker, sources, appendix) {
   s.background = { color: WHITE };
-  label(s, kicker, M, 0.34, 9);
-  txt(s, title, { x: M, y: 0.6, w: 11.0, h: 0.86, fontFace: HEAD, fontSize: 22, color: BLACK, lineSpacingMultiple: 1.0 });
-  s.addImage({ path: D + "logo_black.png", x: W - M - 0.85, y: 0.36, w: 0.85, h: 0.85 * LOGO });
+  txt(s, title, { x: M, y: 0.3, w: 11.0, h: 0.56, fontFace: HEAD, fontSize: 28, color: BLACK, lineSpacingMultiple: 1.0, valign: "bottom" });
+  txt(s, kicker, { x: M, y: 0.92, w: 11.1, h: 0.32, fontSize: 12.5, color: G8, lineSpacingMultiple: 1.0 });
+  s.addImage({ path: D + "logo_black.png", x: W - M - 0.85, y: 0.42, w: 0.85, h: 0.85 * LOGO });
   if (sources) txt(s, "Sources: " + sources, { x: M, y: 6.76, w: CW, h: 0.3, fontSize: 7.5, color: G5, lineSpacingMultiple: 1.0 });
   const names = appendix ? ["APPENDIX"] : SECTIONS;
   names.forEach((n, i) => {
@@ -65,7 +70,7 @@ function frame(s, sec, kicker, title, sources, appendix) {
   txt(s, String(page), { x: W - M - 0.5, y: 7.12, w: 0.5, h: 0.2, fontSize: 8, color: G6, align: "right" });
 }
 function card(s, x, y, w, h, head, opts = {}) {
-  s.addShape(pres.shapes.RECTANGLE, { x, y, w, h, fill: { color: opts.fill || WHITE }, line: { color: G3, width: 0.75 }, shadow: shadow() });
+  s.addShape(pres.shapes.RECTANGLE, { x, y, w, h, fill: { color: opts.fill || WHITE }, line: { color: opts.line || G3, width: 0.75 }, shadow: shadow() });
   if (head) {
     s.addShape(pres.shapes.RECTANGLE, { x, y, w, h: 0.4, fill: { color: BLACK }, line: { color: BLACK, width: 0.75 } });
     txt(s, head, { x: x + 0.18, y, w: w - 0.36, h: 0.4, fontFace: HEAD, fontSize: 12, bold: true, color: WHITE, charSpacing: 1, valign: "middle", lineSpacingMultiple: 1.0 });
@@ -81,14 +86,20 @@ function frameImg(s, path, x, y, w, h) {
   s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: x - 0.05, y: y - 0.05, w: w + 0.1, h: h + 0.1, rectRadius: 0.1, fill: { color: BLACK }, line: { color: G8, width: 0.75 }, shadow: shadow() });
   s.addImage({ path, x, y, w, h });
 }
-function phoneIn(s, file, slotX, slotW, y, h, cap, ratio = PHONE, capColor = G8) {
+function phoneIn(s, file, slotX, slotW, y, h, cap, ratio = PHONE, capColor = G8, path = IMG) {
   const w = h / ratio, x = slotX + (slotW - w) / 2;
-  frameImg(s, IMG + file, x, y, w, h);
-  if (cap) txt(s, stop(cap), { x: slotX, y: y + h + 0.14, w: slotW, h: 0.5, fontSize: 9, color: capColor, align: "center" });
+  frameImg(s, path + file, x, y, w, h);
+  if (cap) txt(s, stop(cap), { x: slotX, y: y + h + 0.12, w: slotW, h: 0.45, fontSize: 9, color: capColor, align: "center" });
+  return { x, w };
 }
 function stat(s, x, y, w, big, small, dark) {
   txt(s, big, { x, y, w, h: 0.6, fontFace: HEAD, fontSize: 28, bold: true, color: dark ? WHITE : BLACK, lineSpacingMultiple: 1.0 });
   txt(s, stop(small), { x, y: y + 0.66, w, h: 0.6, fontSize: 9.5, color: dark ? G3 : G8 });
+}
+function statTile(s, c, y, h, big, small, dark) {
+  s.addShape(pres.shapes.RECTANGLE, { x: c.x, y, w: c.w, h, fill: { color: dark ? BLACK : WHITE }, line: { color: dark ? BLACK : G3, width: 0.75 }, shadow: shadow() });
+  txt(s, big, { x: c.x + 0.2, y: y + 0.1, w: c.w - 0.4, h: 0.46, fontFace: HEAD, fontSize: 24, bold: true, color: dark ? WHITE : BLACK, valign: "middle", lineSpacingMultiple: 1.0 });
+  txt(s, stop(small), { x: c.x + 0.2, y: y + 0.58, w: c.w - 0.4, h: h - 0.66, fontSize: 9, color: dark ? G3 : G8 });
 }
 function table(s, rows, x, y, w, colW, o = {}) {
   const fs = o.fs || 10;
@@ -99,12 +110,22 @@ function table(s, rows, x, y, w, colW, o = {}) {
   }));
   s.addTable(data, { x, y, w, colW, border: { type: "solid", pt: 0.5, color: G3 }, rowH: o.rowH || 0.32, autoPage: false });
 }
+function chevrons(s, steps, y, h) {
+  const n = steps.length, ov = 0.12, w = (CW + ov * (n - 1)) / n;
+  const fills = [G4, G6, G8, BLACK];
+  steps.forEach((st, k) => {
+    const x = M + k * (w - ov);
+    s.addShape(k === 0 ? pres.shapes.PENTAGON : pres.shapes.CHEVRON, { x, y, w, h, fill: { color: fills[k % 4] }, line: { color: WHITE, width: 1.5 } });
+    txt(s, [{ text: st[0], options: { bold: true, fontSize: 10, color: WHITE, charSpacing: 1.5, breakLine: true } }, { text: st[1], options: { fontSize: 8.5, color: k === 0 ? INK : G2 } }],
+      { x: x + (k === 0 ? 0.2 : 0.35), y, w: w - 0.6, h, valign: "middle", lineSpacingMultiple: 1.0 });
+  });
+}
 
 /* ========================= TITLE ========================= */
 {
   const s = pres.addSlide();
   s.background = { color: BLACK };
-  s.addShape(pres.shapes.RECTANGLE, { x: 0, y: 0, w: 7.4, h: H, fill: { color: "161616" }, line: { color: "161616" } });
+  s.addShape(pres.shapes.RECTANGLE, { x: 7.4, y: 0, w: W - 7.4, h: H, fill: { color: "1A1A1A" }, line: { color: "1A1A1A" } });
   s.addImage({ path: D + "logo_white.png", x: 0.8, y: 0.8, w: 2.2, h: 2.2 * LOGO });
   label(s, "BIC x ZARA CASE COMPETITION  ·  ROUND 1", 0.8, 1.95, 6.2, G4);
   txt(s, "ReLoop", { x: 0.8, y: 2.35, w: 6.2, h: 1.2, fontFace: HEAD, fontSize: 66, color: WHITE, lineSpacingMultiple: 1.0 });
@@ -113,174 +134,181 @@ function table(s, rows, x, y, w, colW, o = {}) {
   txt(s, "TEAM FIREWORKS", { x: 1.05, y: 5.38, w: 5.5, h: 0.3, fontFace: HEAD, fontSize: 13, bold: true, color: WHITE, charSpacing: 2.5 });
   txt(s, "Arya  ·  Gunoor  ·  Jahnvi  ·  Vikram", { x: 1.05, y: 5.75, w: 5.5, h: 0.32, fontSize: 14, color: G2 });
   txt(s, "UC Berkeley  ·  November 2026", { x: 1.05, y: 6.15, w: 5.5, h: 0.28, fontSize: 9.5, color: G5 });
-  const slots = cols(2, 7.9, 4.93);
-  phoneIn(s, "s-lock.jpg", slots[0].x, slots[0].w, 0.9, 5.0, null);
-  phoneIn(s, "b-polist.jpg", slots[1].x, slots[1].w, 0.9, 5.0, null);
-  label(s, "SELLER PROMPT", slots[0].x, 6.12, slots[0].w, G4, "center");
-  label(s, "BUYER VIEW", slots[1].x, 6.12, slots[1].w, G4, "center");
-  txt(s, "Live prototype: zara-reloop.vercel.app", { x: 7.9, y: 6.6, w: 4.93, h: 0.25, fontSize: 9.5, color: G5, align: "center" });
+  // right: the trigger notification, then the buyer view
+  const rx = 7.95, rw = W - M - rx;
+  label(s, "THE PROMPT AN OWNER RECEIVES", rx, 0.75, rw, G4);
+  s.addImage({ path: IMG + "notif.png", x: rx, y: 1.05, w: rw, h: rw * NOTIF, shadow: shadow() });
+  const slots = cols(2, rx, rw);
+  phoneIn(s, "b-pdp.jpg", slots[0].x, slots[0].w, 2.55, 3.65, null);
+  phoneIn(s, "b-polist.jpg", slots[1].x, slots[1].w, 2.55, 3.65, null);
+  label(s, "SHOP PRE-OWNED", slots[0].x, 6.32, slots[0].w, G4, "center");
+  label(s, "VERIFIED UNITS", slots[1].x, 6.32, slots[1].w, G4, "center");
+  txt(s, "Live prototype: zara-reloop.vercel.app", { x: rx, y: 6.75, w: rw, h: 0.25, fontSize: 9.5, color: G5, align: "center" });
 }
 
 /* ========================= 1. PROBLEM ========================= */
 {
   const s = pres.addSlide();
-  frame(s, 0, "01  TARGET BEHAVIOUR", "Zara clothes are resold at scale, just not on Zara: its own resale sits outside the shopping journey, so buying new stays easier",
-    "ThredUp Resale Report 2026; Vinted listing counts (Trendwatching, 2024); Scientific Reports 2025 (n=1,009 US); BCG x Vestiaire Collective 2022; YouGov US; ThredUp Resale Report 2025; Zara Pre-Owned US terms (Oct 2024); Zara iOS app, screenshots 14 Nov 2026");
-  const aw = 3.55, bw = 4.98;
-  const a = { x: M, w: aw }, b = { x: M + aw + GUT, w: bw }, c = { x: M + aw + bw + 2 * GUT, w: CW - aw - bw - 2 * GUT };
-  const h = MAIN_BOTTOM - TOP;
-  let i = card(s, a.x, TOP, a.w, h, "Decision moments");
-  label(s, "THE BUYER", i.x, i.y, i.w);
-  body(s, "On a product page, **their size is sold out** or the price feels high. Today Zara offers only \"Notify me\" or another new item.", { x: i.x, y: i.y + 0.3, w: i.w, h: 1.1 });
-  s.addShape(pres.shapes.LINE, { x: i.x, y: i.y + 1.5, w: i.w, h: 0, line: { color: G3, width: 0.75 } });
-  label(s, "THE OWNER", i.x, i.y + 1.65, i.w);
-  body(s, "A Zara piece **has stopped being worn**. Listing it takes effort and the payoff is unclear, so it stays in the closet or is donated.", { x: i.x, y: i.y + 1.95, w: i.w, h: 1.1 });
-  s.addShape(pres.shapes.LINE, { x: i.x, y: i.y + 3.15, w: i.w, h: 0, line: { color: G3, width: 0.75 } });
-  body(s, "Goal: make **choosing and supplying pre-owned** as easy as buying new.", { x: i.x, y: i.y + 3.3, w: i.w, h: 0.6, fontSize: 10.5, color: G8 });
-
-  i = card(s, b.x, TOP, b.w, h, "Three barriers");
-  const rows = [
-    ["1  HIDDEN", "Pre-Owned opens as a separate web page from item 07 of the menu. Product pages never show a pre-owned unit, even for a sold-out size.", "46%", "of shoppers check resale before buying new"],
-    ["2  UNTRUSTED", "Condition is self-declared and the price is typed by the seller. The app suggests $7-13; the seller can still list at $50.", "45%", "of US adults worry about the condition of used clothes"],
-    ["3  EFFORTFUL", "The owner must find, photograph, price, pack and post the item, for no reward, even when it has just sold out.", "41.7%", "of US consumers have never sold a garment"],
+  frame(s, 0, "Why Pre-Owned Isn't the Easy Choice", "Zara is resold at scale elsewhere, but its own resale is hidden, untrusted and effortful, so buying new stays easier.",
+    "ThredUp Resale Report 2026 and 2025; Vinted listing counts (Trendwatching, 2024); Scientific Reports 2025 (n=1,009 US); BCG x Vestiaire Collective 2022; YouGov US; Zara Pre-Owned US terms (Oct 2024); Zara iOS app, screenshots 14 Nov 2026");
+  const tiles = [["#2", "most-shopped resale brand on ThredUp, with orders up 25% a year"], ["~62M", "Zara items listed on Vinted (tracker count)"], ["46%", "of shoppers check resale before buying new, mostly off-Zara"], ["41.7%", "of US consumers have never sold a garment"]];
+  const sh = 1.08;
+  cols(4).forEach((c, k) => statTile(s, c, TOP, sh, tiles[k][0], tiles[k][1], k === 0));
+  const y = TOP + sh + GUT, h = MAIN_BOTTOM - y, leftW = 8.13;
+  const bar = [
+    ["FaEyeSlash", "Hidden", "Pre-Owned opens as a separate web page from item 07 of the menu. Product pages never show a pre-owned unit, even for a sold-out size.", "BUYER on a sold-out size"],
+    ["FaQuestionCircle", "Untrusted", "Condition is self-declared and the price is typed by the seller. The app suggests $7-13; a seller can still list at $50.", "BUYER weighing a used item"],
+    ["FaHourglassHalf", "Effortful", "The owner must find, photograph, price, pack and post the item, for no reward, even when it has just sold out.", "OWNER who stopped wearing it"],
   ];
-  const rowH = (i.h + 0.05) / 3, statW = 1.45, textW = i.w - statW - 0.2;
-  rows.forEach((r, k) => {
-    const y = i.y + k * rowH;
-    label(s, r[0], i.x, y, textW, BLACK);
-    body(s, r[1], { x: i.x, y: y + 0.28, w: textW, h: rowH - 0.4, fontSize: 10 });
-    s.addShape(pres.shapes.RECTANGLE, { x: i.x + textW + 0.2, y, w: statW, h: rowH - 0.18, fill: { color: G1 }, line: { color: G2 } });
-    txt(s, r[2], { x: i.x + textW + 0.3, y: y + 0.08, w: statW - 0.2, h: 0.42, fontFace: HEAD, fontSize: 20, bold: true, color: BLACK, lineSpacingMultiple: 1.0 });
-    txt(s, stop(r[3]), { x: i.x + textW + 0.3, y: y + 0.52, w: statW - 0.2, h: rowH - 0.75, fontSize: 8, color: G8 });
-    if (k < 2) s.addShape(pres.shapes.LINE, { x: i.x, y: y + rowH - 0.09, w: i.w, h: 0, line: { color: G2, width: 0.75 } });
+  cols(3, M, leftW).forEach((c, k) => {
+    card(s, c.x, y, c.w, h, null);
+    icon(s, bar[k][0], c.x + 0.2, y + 0.2, 0.55);
+    txt(s, bar[k][1], { x: c.x + 0.9, y: y + 0.2, w: c.w - 1.1, h: 0.55, fontFace: HEAD, fontSize: 18, bold: true, color: BLACK, valign: "middle", lineSpacingMultiple: 1.0 });
+    body(s, bar[k][2], { x: c.x + 0.2, y: y + 0.92, w: c.w - 0.4, h: 1.5, fontSize: 11 });
+    s.addShape(pres.shapes.RECTANGLE, { x: c.x + 0.2, y: y + h - 0.62, w: c.w - 0.4, h: 0.44, fill: { color: G1 }, line: { color: G2 } });
+    txt(s, [{ text: "DECISION MOMENT  ", options: { bold: true, fontSize: 7.5, color: G6, charSpacing: 1.5 } }, { text: bar[k][3], options: { bold: true, fontSize: 8.5, color: BLACK } }], { x: c.x + 0.3, y: y + h - 0.62, w: c.w - 0.6, h: 0.44, valign: "middle" });
   });
-
-  i = card(s, c.x, TOP, c.w, h, "What a customer sees", { fill: G1 });
-  const slots = cols(2, i.x, i.w), ph = 2.55;
-  phoneIn(s, "appdark.jpg", slots[0].x, slots[0].w, i.y + 0.05, ph, "Native app (dark)", REAL);
-  phoneIn(s, "web.jpg", slots[1].x, slots[1].w, i.y + 0.05, ph, "Pre-Owned (web view)", REAL);
-  body(s, "Zara is the **#2 most-shopped brand** on ThredUp (orders +25% a year) and has **~62M items** listed on Vinted.", { x: i.x, y: i.y + ph + 0.6, w: i.w, h: 0.75, fontSize: 9, color: G8 });
+  const R = { x: M + leftW + GUT, w: CW - leftW - GUT };
+  card(s, R.x, y, R.w, h, null, { fill: G1 });
+  label(s, "WHAT A CUSTOMER SEES TODAY", R.x + 0.18, y + 0.14, R.w - 0.36, BLACK);
+  const ph = 2.3, sl = cols(3, R.x + 0.1, R.w - 0.2);
+  phoneIn(s, "appdark.jpg", sl[0].x, sl[0].w, y + 0.48, ph, "Native app", REAL);
+  phoneIn(s, "web.jpg", sl[1].x, sl[1].w, y + 0.48, ph, "Pre-Owned web view", REAL);
+  phoneIn(s, "price50.jpg", sl[2].x, sl[2].w, y + 0.48, ph, "$50 vs \"$7-13\" hint", REAL);
   takeaway(s, "The demand for second-hand Zara exists. The barriers are **placement, trust and effort**, and all three sit inside Zara's own app and stores.");
 }
 
 /* ========================= 2. SOLUTION ========================= */
 {
   const s = pres.addSlide();
-  frame(s, 1, "02  THE CONCEPT", "ReLoop puts pre-owned one tap from new: Zara prompts owners with a price, AI grades the photos, and staff verify the garment once it sells",
+  frame(s, 1, "ReLoop: Pre-Owned, One Tap From New", "Zara prompts owners with a price, AI grades the photos, and staff verify the garment in store once it sells.",
     "Team prototype (zara-reloop.vercel.app), built on Zara's existing iOS app design and Zara Pre-Owned terms");
-  const lanes = cols(2), laneH = 3.62;
+  // trigger band
+  const bh = 1.05;
+  s.addShape(pres.shapes.RECTANGLE, { x: M, y: TOP, w: CW, h: bh, fill: { color: BLACK }, line: { color: BLACK }, shadow: shadow() });
+  label(s, "THE TRIGGER", M + 0.25, TOP + 0.14, 2.0, G4);
+  txt(s, "A price, not a request", { x: M + 0.25, y: TOP + 0.38, w: 3.2, h: 0.5, fontFace: HEAD, fontSize: 18, bold: true, color: WHITE, valign: "middle" });
+  const nh = bh - 0.2, nw = nh / NOTIF;
+  s.addImage({ path: IMG + "notif.png", x: M + 3.5, y: TOP + 0.1, w: nw, h: nh });
+  body(s, "Sent from the purchase record only when an owner's item is **in demand**; at most six prompts a year, one-tap opt-out.", { x: M + 3.5 + nw + 0.3, y: TOP, w: CW - 3.8 - nw - 0.25, h: bh, fontSize: 10.5, color: G3, boldColor: WHITE, valign: "middle" });
+  // lanes
+  const ly = TOP + bh + 0.15, lh = 3.05, lanes = cols(2);
   const lane = (L, title, shots) => {
-    s.addShape(pres.shapes.RECTANGLE, { x: L.x, y: TOP, w: L.w, h: laneH, fill: { color: G1 }, line: { color: G2 } });
-    label(s, title, L.x + 0.18, TOP + 0.14, L.w - 0.36, BLACK);
-    cols(3, L.x + 0.1, L.w - 0.2).forEach((sl, k) => phoneIn(s, shots[k][0], sl.x, sl.w, TOP + 0.5, 2.5, shots[k][1]));
+    s.addShape(pres.shapes.RECTANGLE, { x: L.x, y: ly, w: L.w, h: lh, fill: { color: G1 }, line: { color: G2 } });
+    label(s, title, L.x + 0.18, ly + 0.12, L.w - 0.36, BLACK);
+    const sl = cols(3, L.x + 0.1, L.w - 0.2);
+    sl.forEach((c, k) => {
+      phoneIn(s, shots[k][0], c.x, c.w, ly + 0.42, 2.15, shots[k][1]);
+      if (k < 2) txt(s, "›", { x: c.x + c.w - 0.05, y: ly + 1.25, w: 0.3, h: 0.5, fontFace: HEAD, fontSize: 28, color: G5, align: "center", valign: "middle" });
+    });
   };
-  lane(lanes[0], "OWNER  ·  SELL IN ABOUT A MINUTE", [["s-lock.jpg", "1  Push: \"yours could sell for up to $82\""], ["s-offer.jpg", "2  Four photos, AI grade, Zara sets the price"], ["s-fulfil.jpg", "3  Listed; drop at a store only once it sells"]]);
-  lane(lanes[1], "BUYER  ·  SAME PAGE, SAME BAG AS NEW", [["b-pdp.jpg", "1  SHOP PRE-OWNED under ADD TO BAG"], ["b-size.jpg", "2  Sold-out size shows PRE-OWNED IN M"], ["b-done.jpg", "3  Order turns ZARA VERIFIED before it ships"]]);
-  const pil = [
-    ["Accessible", "Native in the Zara app: on every product page, in the size picker and in the one bag. No separate web page."],
-    ["Effortless", "Listing starts from the purchase record, so Zara already knows the item, size and original price. Four photos, one tap."],
-    ["Trusted", "AI-GRADED at listing, so it goes live instantly. After a sale, staff check it in a few minutes and it becomes ZARA VERIFIED."],
-    ["Rewarding", "The seller keeps 100% of a Zara-set price, +10% as Zara credit, plus a $0-10 bonus only when the item is sold out."],
-  ];
-  const py = TOP + laneH + 0.15, ph = TK_Y + TK_H - py;
+  lane(lanes[0], "OWNER  ·  SELL IN ABOUT A MINUTE", [["s-offer-intro.jpg", "1  Sees the price by grade"], ["s-offer.jpg", "2  Four photos; AI grade"], ["s-fulfil.jpg", "3  Listed; drop off once sold"]]);
+  lane(lanes[1], "BUYER  ·  SAME PAGE, SAME BAG AS NEW", [["b-pdp.jpg", "1  SHOP PRE-OWNED"], ["b-size.jpg", "2  PRE-OWNED IN M"], ["b-done.jpg", "3  ZARA VERIFIED, ships"]]);
+  // pillars
+  const py = ly + lh + 0.15, ph = TK_Y + TK_H - py;
+  const pil = [["FaMobileAlt", "Accessible", "Native: product page, size picker, one bag"], ["FaCamera", "Effortless", "Starts from the purchase record; four photos"], ["FaShieldAlt", "Trusted", "AI-GRADED to list; ZARA VERIFIED to ship"], ["FaGift", "Rewarding", "100% to seller, +10% as credit, $0-10 bonus"]];
   cols(4).forEach((c, k) => {
     s.addShape(pres.shapes.RECTANGLE, { x: c.x, y: py, w: c.w, h: ph, fill: { color: WHITE }, line: { color: G3, width: 0.75 }, shadow: shadow() });
-    txt(s, pil[k][0], { x: c.x + 0.18, y: py + 0.12, w: c.w - 0.36, h: 0.32, fontFace: HEAD, fontSize: 14, bold: true, color: BLACK, lineSpacingMultiple: 1.0 });
-    body(s, pil[k][1], { x: c.x + 0.18, y: py + 0.48, w: c.w - 0.36, h: ph - 0.6, fontSize: 9.5 });
+    icon(s, pil[k][0], c.x + 0.15, py + (ph - 0.5) / 2, 0.5);
+    txt(s, [{ text: pil[k][1], options: { fontFace: HEAD, fontSize: 13, bold: true, color: BLACK, breakLine: true } }, { text: pil[k][2], options: { fontSize: 10, color: G8 } }],
+      { x: c.x + 0.8, y: py, w: c.w - 0.95, h: ph, valign: "middle", lineSpacingMultiple: 1.05 });
   });
 }
 
 /* ========================= 3. INSIGHTS ========================= */
 {
   const s = pres.addSlide();
-  frame(s, 2, "03  CROSS-INDUSTRY INSIGHTS", "Each part of ReLoop has already changed behaviour elsewhere; Zara can combine them because it owns the purchase record, the app and the stores",
-    "Patagonia press release (14 Oct 2026) and Trellis; Zalando release (28 May 2026); Vestiaire Collective Trust page and fee FAQ; ThredUp FY2025 10-K and seller terms; H&M Group annual report 2025; Sellpy FY2025 results; Angrist, Caldwell & Hall, AEJ: Applied (2021); US GAO-20-191 (2020)");
+  frame(s, 2, "Proven Elsewhere, Combined by Zara", "Each part of ReLoop has already changed behaviour at another company; only Zara holds every asset needed to combine them.",
+    "Patagonia press release (14 Oct 2026); Zalando release (28 May 2026); Vestiaire Collective Trust page and fee FAQ; ThredUp FY2025 10-K and seller terms; Sellpy FY2025 results; Angrist, Caldwell & Hall, AEJ: Applied (2021); US GAO-20-191 (2020)");
   const rows = [
-    ["Lever", "Who proved it", "What happened", "What ReLoop takes for Zara"],
-    ["Put used next to new", "Patagonia, Zalando", "Patagonia moved used items into its main store with one cart (Oct 2026): ~160k items, ~$13M a year. At Zalando, 40% of pre-owned buyers add a new item to the same order.", "SHOP PRE-OWNED on every product page and one bag, inside the native app."],
-    ["Screen cheaply; check physically only when needed", "Vestiaire Collective, The RealReal", "Vestiaire's digital screen removes ~10% of listings, mostly for photo quality and condition. A physical check costs the buyer $15, half the price of a Zara garment.", "AI photo gate at listing; a 7-minute store check only after the item has sold."],
-    ["Let the platform own the price", "ThredUp, Mercari, Depop", "ThredUp prices every item itself; Mercari steps prices down until they sell. ThredUp pays a seller only 15-30% on a $20-50 item.", "Zara sets the price from its own and market comparables; the seller keeps 100%."],
-    ["Pay for supply only where it is scarce", "Uber, US airlines", "A 10% temporary pay rise brought ~12% more driver hours. Airlines raise the offer until enough passengers give up a seat: 43 volunteer for every 1 bumped.", "A Zara-credit bonus that rises only when an item is sold out and has a waitlist."],
-    ["Avoid the warehouse trap", "H&M / Sellpy, ThredUp", "Sellpy lost SEK 165M on SEK 2.0bn of sales in 2025. ThredUp spends ~49% of revenue on operations for a 4% margin.", "Sell first, move later: the garment stays with the owner until it is bought."],
+    ["FaLayerGroup", "Put used next to new", "Patagonia · Zalando", "40%", "of Zalando pre-owned buyers add a new item", "Patagonia merged used and new into one cart in Oct 2026: ~160k items, ~$13M a year.", "SHOP PRE-OWNED on every product page, one bag."],
+    ["FaSearchDollar", "Screen cheaply first", "Vestiaire · The RealReal", "~10%", "of Vestiaire listings removed by a digital screen", "Mostly photo quality and condition. A physical check costs $15, half a Zara garment.", "AI photo gate at listing; store check only once sold."],
+    ["FaTags", "Platform owns the price", "ThredUp · Mercari · Depop", "15-30%", "what ThredUp pays a seller on a $20-50 item", "ThredUp prices every item itself; Mercari steps prices down until they sell.", "Zara sets the price; the seller keeps 100%."],
+    ["FaBolt", "Pay for scarce supply", "Uber · US airlines", "+12%", "driver hours from a 10% temporary pay rise", "Airlines raise the offer until enough people give up a seat: 43 volunteers per bump.", "Bonus rises only when an item is sold out."],
+    ["FaWarehouse", "Avoid the warehouse", "H&M / Sellpy · ThredUp", "4%", "ThredUp adjusted EBITDA margin; Sellpy lost SEK 165M", "Warehouses pay an inbound parcel, storage and rejects before anything sells.", "Sell first, move later; garment stays with owner."],
   ];
-  const rh = (MAIN_BOTTOM - TOP - 0.4) / 5;
-  table(s, rows, M, TOP, CW, [2.35, 1.8, 5.0, CW - 9.15], { fs: 10, rowH: [0.4, rh, rh, rh, rh, rh], boldFirst: true });
+  const n = rows.length, gap = 0.1, rh = (MAIN_BOTTOM - TOP - gap * (n - 1)) / n;
+  const xs = { ic: M + 0.18, lever: M + 0.85, stat: M + 3.35, what: M + 6.2, zara: M + 9.35 };
+  rows.forEach((r, k) => {
+    const y = TOP + k * (rh + gap);
+    s.addShape(pres.shapes.RECTANGLE, { x: M, y, w: CW, h: rh, fill: { color: WHITE }, line: { color: G3, width: 0.75 }, shadow: shadow() });
+    icon(s, r[0], xs.ic, y + (rh - 0.5) / 2, 0.5);
+    txt(s, [{ text: r[1], options: { fontFace: HEAD, fontSize: 13, bold: true, color: BLACK, breakLine: true } }, { text: r[2], options: { fontSize: 8.5, color: G6 } }], { x: xs.lever, y, w: 2.45, h: rh, valign: "middle", lineSpacingMultiple: 1.05 });
+    txt(s, r[3], { x: xs.stat, y, w: 1.35, h: rh, fontFace: HEAD, fontSize: 20, bold: true, color: BLACK, valign: "middle", lineSpacingMultiple: 1.0 });
+    txt(s, stop(r[4]), { x: xs.stat + 1.4, y, w: 1.35, h: rh, fontSize: 8, color: G8, valign: "middle" });
+    txt(s, stop(r[5]), { x: xs.what, y, w: 3.0, h: rh, fontSize: 9.5, color: G9, valign: "middle" });
+    s.addShape(pres.shapes.RECTANGLE, { x: xs.zara, y, w: M + CW - xs.zara, h: rh, fill: { color: BLACK }, line: { color: BLACK } });
+    txt(s, [{ text: "FOR ZARA", options: { bold: true, fontSize: 7.5, color: G4, charSpacing: 2, breakLine: true } }, { text: stop(r[6]), options: { fontSize: 10, bold: true, color: WHITE } }], { x: xs.zara + 0.2, y, w: M + CW - xs.zara - 0.35, h: rh, valign: "middle", lineSpacingMultiple: 1.05 });
+  });
   takeaway(s, "No single company has all of these. **Only Zara knows what each customer owns, has the app they already open, and a store near them.**");
 }
 
 /* ========================= 4. ECONOMICS ========================= */
 {
   const s = pres.addSlide();
-  frame(s, 3, "04  IMPLEMENTATION & ECONOMICS", "Through Zara's stores, ReLoop serves a garment 40% cheaper than warehouse resale and pays for itself above ~0.4% of US sales",
+  frame(s, 3, "Implementation & Economics", "Through Zara's stores a garment costs 40% less to serve than warehouse resale; the programme pays for itself above ~0.4% of sales.",
     "Team financial model (US, 3 years; appendix A6-A7). Zara Pre-Owned US terms; USPS Notice 123 (Oct 2026); BLS ECEC (Dec 2025); Zara US job postings; Stripe Connect; Inditex FY2025; H&M Group 2025; Patagonia 2026. Inditex does not disclose US sales, so the base is an estimate");
-  const [c1, c2, c3] = cols(3), h = MAIN_BOTTOM - TOP;
-  let i = card(s, c1.x, TOP, c1.w, h, "How it runs");
-  const steps = [["LISTED", "AI-graded, live in the app"], ["SOLD", "Buyer pays in one checkout"], ["DROP-OFF", "Seller brings it to a store"], ["ZARA VERIFIED", "7-minute staff check, ships"]];
-  steps.forEach((st, k) => {
-    const y = i.y + k * 0.46;
-    s.addShape(pres.shapes.OVAL, { x: i.x, y, w: 0.32, h: 0.32, fill: { color: k === 3 ? BLACK : G2 }, line: { color: k === 3 ? BLACK : G4 } });
-    txt(s, String(k + 1), { x: i.x, y, w: 0.32, h: 0.32, fontSize: 10, bold: true, color: k === 3 ? WHITE : BLACK, align: "center", valign: "middle" });
-    txt(s, [{ text: st[0] + "  ", options: { bold: true, color: BLACK, fontSize: 10 } }, { text: st[1], options: { color: G8, fontSize: 9.5 } }], { x: i.x + 0.45, y, w: i.w - 0.45, h: 0.32, valign: "middle" });
-  });
-  s.addShape(pres.shapes.LINE, { x: i.x, y: i.y + 1.95, w: i.w, h: 0, line: { color: G2, width: 0.75 } });
-  label(s, "ALREADY EXISTS", i.x, i.y + 2.08, i.w);
-  body(s, "Pre-Owned platform, Stripe payouts, prepaid labels, store returns desks and ship-from-store.", { x: i.x, y: i.y + 2.34, w: i.w, h: 0.55, fontSize: 9.5 });
-  label(s, "ZARA MUST BUILD  ·  $4.8M ONE-OFF", i.x, i.y + 2.98, i.w);
-  body(s, "Native app module, pricing and AI-grading services, a store verify screen and kit, and staff training. No warehouse.", { x: i.x, y: i.y + 3.24, w: i.w, h: 0.55, fontSize: 9.5 });
-
-  i = card(s, c2.x, TOP, c2.w, h, "Per garment sold, Year 3 ($)");
+  const sh = 1.08;
+  const tiles = [["$12.70", "cost to serve a garment, vs $21.14 in a warehouse model"], ["+$2.15", "net contribution per garment sold, Year 3"], ["~560k", "garments a year to break even, ~0.4% of US sales"], ["$4.8M", "one-off build: app, pricing, grading, store kit; no warehouse"]];
+  cols(4).forEach((c, k) => statTile(s, c, TOP, sh, tiles[k][0], tiles[k][1], k === 0));
+  const cy = TOP + sh + 0.18;
+  chevrons(s, [["LISTED", "AI-graded, live in the app"], ["SOLD", "Buyer pays in one checkout"], ["DROP-OFF", "Seller brings it to a store"], ["ZARA VERIFIED", "7-min staff check, then ships"]], cy, 0.55);
+  const y = cy + 0.55 + 0.18, h = MAIN_BOTTOM - y, [l, r] = cols(2);
+  let i = card(s, l.x, y, l.w, h, "Per garment sold, Year 3 ($)");
   s.addChart(pres.charts.BAR, [{ name: "Per garment", labels: ["Fees less cost to serve", "Credit spent on new items", "Saved and bigger baskets", "New-to-Zara customers", "Seller bonuses (credit)", "New sales replaced", "Net per garment"],
     values: [-2.19, 5.99, 4.22, 2.50, -2.80, -5.57, 2.15] }], {
-    x: i.x - 0.1, y: i.y - 0.05, w: i.w + 0.2, h: 2.95, barDir: "bar", chartColors: [BLACK], invertedColors: [G4], catAxisOrientation: "maxMin", catAxisLabelPos: "low",
+    x: i.x - 0.1, y: i.y - 0.12, w: i.w + 0.2, h: i.h + 0.17, barDir: "bar", chartColors: [BLACK], invertedColors: [G4], catAxisOrientation: "maxMin", catAxisLabelPos: "low",
     showValue: true, dataLabelFormatCode: "+0.00;-0.00", dataLabelFontSize: 8.5, dataLabelColor: INK, dataLabelPosition: "outEnd", dataLabelFontFace: BODY,
     catAxisLabelFontSize: 8.5, catAxisLabelColor: G9, catAxisLabelFontFace: BODY, valAxisHidden: true, valGridLine: { style: "none" }, catGridLine: { style: "none" },
-    catAxisLineShow: false, showLegend: false, barGapWidthPct: 45, valAxisMinVal: -8, valAxisMaxVal: 8,
+    catAxisLineShow: false, showLegend: false, barGapWidthPct: 40, valAxisMinVal: -8, valAxisMaxVal: 8,
   });
-  s.addShape(pres.shapes.LINE, { x: i.x, y: i.y + 3.0, w: i.w, h: 0, line: { color: G2, width: 0.75 } });
-  body(s, "Cost to serve **$12.70** vs **$21.14** in a warehouse model, which pays an inbound parcel, storage and ~30% rejects.", { x: i.x, y: i.y + 3.12, w: i.w, h: 0.62, fontSize: 9.5 });
-
-  i = card(s, c3.x, TOP, c3.w, h, "Three scenarios, Year 3 (US)");
-  const sc = [["", "Typical", "Base", "Upside"], ["Benchmark", "<0.1% of sales", "~0.16%", "~0.7% (H&M)"], ["Garments resold", "31k", "246k", "873k"], ["Net new revenue", "$0.3M", "$6.7M", "$27.0M"], ["Operating result", "-$1.7M", "-$0.7M", "+$3.0M"], ["Cash after 3 yrs", "-$9.8M", "-$6.8M", "+$0.3M"]];
-  table(s, sc, i.x, i.y - 0.02, i.w, [1.12, 0.84, 0.72, i.w - 2.68], { fs: 8.5, rowH: 0.34, boldFirst: true });
-  body(s, "Break-even at **~560k garments a year**. Net new revenue already subtracts the new sales that pre-owned replaces.", { x: i.x, y: i.y + 2.2, w: i.w, h: 0.62, fontSize: 9.5, color: G8 });
-  body(s, "Zara says today's Pre-Owned is not yet profitable. ReLoop costs **~$7M over 3 years**, under 0.03% of one year of Inditex capex.", { x: i.x, y: i.y + 2.92, w: i.w, h: 0.8, fontSize: 9.5, color: G8 });
+  i = card(s, r.x, y, r.w, h, "Three scenarios, Year 3 (US)");
+  const sc = [["", "Typical", "Base", "Upside"], ["Benchmark", "<0.1% of sales", "~0.16%", "~0.7% (H&M)"], ["Garments resold", "31k", "246k", "873k"], ["Net new revenue", "$0.3M", "$6.7M", "$27.0M"], ["Operating result", "-$1.7M", "-$0.7M", "+$3.0M"], ["Cash after 3 years", "-$9.8M", "-$6.8M", "+$0.3M"]];
+  table(s, sc, i.x, i.y - 0.05, i.w, [1.6, 1.25, 1.1, i.w - 3.95], { fs: 9, rowH: 0.255, boldFirst: true });
+  body(s, "Revenue is net of the new sales pre-owned replaces. ReLoop costs **~$7M over 3 years**.", { x: i.x, y: i.y + 1.66, w: i.w, h: 0.3, fontSize: 9, color: G8 });
   takeaway(s, "Profit is not the goal, but the cost is bounded: **every sale covers its own cost**, and scale decides whether the programme funds itself.");
 }
 
 /* ========================= 5. PILOT ========================= */
 {
   const s = pres.addSlide();
-  frame(s, 4, "05  PILOT & SUCCESS METRICS", "A six-month, two-city pilot with a hold-out group proves whether ReLoop gets more garments re-worn before Zara scales it",
+  frame(s, 4, "Pilot & Success Metrics", "A six-month, two-city pilot with a hold-out group proves whether ReLoop gets more garments re-worn before Zara scales it.",
     "Team pilot design. Benchmarks: ThredUp seller terms (60-80% acceptance); Zalando 2026 (62% of pre-owned sells within 7 days); push and back-in-stock benchmarks (Airship, Batch, Omnisend 2025)");
-  const L = { x: M, w: 7.45 }, R = { x: M + 7.45 + GUT, w: CW - 7.45 - GUT }, gH = 2.45;
+  const L = { x: M, w: 7.45 }, R = { x: M + 7.45 + GUT, w: CW - 7.45 - GUT }, gH = 2.7;
   let i = card(s, L.x, TOP, L.w, gH, "Timeline and decision gates");
   const gx = i.x + 2.2, cw = (i.w - 2.2) / 6;
   ["M1", "M2", "M3", "M4", "M5", "M6"].forEach((m, k) => txt(s, m, { x: gx + k * cw, y: i.y - 0.06, w: cw, h: 0.2, fontSize: 8.5, bold: true, color: G6, align: "center" }));
   const bars = [["Build and label", "Rubric, verify screen", 0, 1, G4], ["Seller side live", "NYC + LA, past season", 1, 2, G8], ["Buyer side + sold out", "A/B on product pages", 3, 2, BLACK], ["Decide", "Scale, fix or stop", 5, 1, G6]];
   bars.forEach((b, k) => {
-    const y = i.y + 0.2 + k * 0.34;
+    const y = i.y + 0.22 + k * 0.36;
     txt(s, [{ text: b[0], options: { bold: true, fontSize: 9.5, color: BLACK, breakLine: true } }, { text: b[1], options: { fontSize: 8, color: G6 } }], { x: i.x, y: y - 0.04, w: 2.15, h: 0.36, valign: "middle", lineSpacingMultiple: 1.0 });
     s.addShape(pres.shapes.RECTANGLE, { x: gx + b[2] * cw + 0.04, y: y + 0.04, w: b[3] * cw - 0.08, h: 0.22, fill: { color: b[4] }, line: { color: b[4] } });
   });
-  body(s, "**Gates:** M3 listing ≥ 1% per prompt, staff ≤ 8 min  ·  M5 sell-through ≥ 50%, disputes < 5%  ·  M6 no drop in full-price sales", { x: i.x, y: i.y + 1.6, w: i.w, h: 0.4, fontSize: 8.5, color: G8 });
+  [[3, "G1"], [5, "G2"], [6, "G3"]].forEach(([m, t]) => {
+    const x = gx + Math.min(m * cw, 6 * cw - 0.15) - 0.11, y = i.y + 1.62;
+    s.addShape(pres.shapes.DIAMOND, { x, y, w: 0.22, h: 0.22, fill: { color: BLACK }, line: { color: WHITE, width: 1 } });
+    txt(s, t, { x: x - 0.32, y, w: 0.3, h: 0.22, fontSize: 7.5, bold: true, color: BLACK, align: "right", valign: "middle" });
+  });
+  body(s, "**G1** listing ≥ 1% per prompt, staff ≤ 8 min  ·  **G2** sell-through ≥ 50%, disputes < 5%  ·  **G3** no drop in full-price sales", { x: i.x, y: i.y + 1.9, w: i.w, h: 0.2, fontSize: 8.5, color: G8 });
   const rY = TOP + gH + 0.15;
   i = card(s, L.x, rY, L.w, MAIN_BOTTOM - rY, "Top risks and how the pilot contains them");
   bullets(s, [
     "**Replaces new sales:** start with past-season and sold-out items, test against a 10% hold-out",
     "**Credit only buys new clothes:** track credit spent on pre-owned, and listing after the bonus ends",
     "**Store queues:** QR drop-off at the returns desk, checks in quiet hours, mail-in as overflow",
-  ], i.x, i.y, i.w, i.h, 10.5, 9);
+  ], i.x, i.y, i.w, i.h, 10, 5);
   i = card(s, R.x, TOP, R.w, MAIN_BOTTOM - TOP, "Success = more garments in use");
-  const k6 = [["Garments re-worn", "Sold and Zara-verified units", "47k Y1 · 246k Y3"], ["Owners who list", "Prompted owners listing at least one item", "≥ 1.5% per prompt"], ["Sold-out rescues", "Sold-out sessions ending in a pre-owned buy", "Up vs hold-out"],
-    ["Habit without a bonus", "Sellers who list again with no bonus", "≥ 30% in 90 days"], ["Trust", "Buyer disputes after ZARA VERIFIED", "< 4%"], ["Store load", "Staff minutes per verified item", "≤ 7 min"]];
-  const rh = (i.h + 0.05) / 6, boxW = 1.5;
+  const k6 = [["FaRedoAlt", "Garments re-worn", "Sold and Zara-verified units", "47k Y1 · 246k Y3"], ["FaUserFriends", "Owners who list", "Prompted owners listing an item", "≥ 1.5% per prompt"], ["FaShoppingBag", "Sold-out rescues", "Sold-out sessions ending in pre-owned", "Up vs hold-out"],
+    ["FaClock", "Habit without a bonus", "Sellers who list again, no bonus", "≥ 30% in 90 days"], ["FaCheckCircle", "Trust", "Disputes after ZARA VERIFIED", "< 4%"], ["FaStore", "Store load", "Staff minutes per verified item", "≤ 7 min"]];
+  const rh = (i.h + 0.05) / 6, boxW = 1.45;
   k6.forEach((r, k) => {
     const y = i.y + k * rh;
-    txt(s, [{ text: r[0], options: { bold: true, fontSize: 10, color: BLACK, breakLine: true } }, { text: r[1], options: { fontSize: 8.5, color: G6 } }], { x: i.x, y, w: i.w - boxW - 0.15, h: rh - 0.1, valign: "middle", lineSpacingMultiple: 1.0 });
+    icon(s, r[0], i.x, y + (rh - 0.1 - 0.36) / 2, 0.36, false);
+    txt(s, [{ text: r[1], options: { bold: true, fontSize: 10, color: BLACK, breakLine: true } }, { text: r[2], options: { fontSize: 8.5, color: G6 } }], { x: i.x + 0.48, y, w: i.w - boxW - 0.6, h: rh - 0.1, valign: "middle", lineSpacingMultiple: 1.0 });
     s.addShape(pres.shapes.RECTANGLE, { x: i.x + i.w - boxW, y: y + 0.03, w: boxW, h: rh - 0.16, fill: { color: G1 }, line: { color: G2 } });
-    txt(s, r[2], { x: i.x + i.w - boxW, y: y + 0.03, w: boxW, h: rh - 0.16, fontSize: 9.5, bold: true, color: BLACK, align: "center", valign: "middle" });
+    txt(s, r[3], { x: i.x + i.w - boxW, y: y + 0.03, w: boxW, h: rh - 0.16, fontSize: 9.5, bold: true, color: BLACK, align: "center", valign: "middle" });
   });
-  takeaway(s, "Zara learns in **six months, in two cities, with written stop rules** whether integration plus verification changes what customers do, and only then scales it.");
+  takeaway(s, "Zara learns in **six months, in two cities, with written stop rules** whether integration plus verification changes what customers do.");
 }
 
 /* ========================= APPENDIX ========================= */
@@ -293,7 +321,21 @@ function table(s, rows, x, y, w, colW, o = {}) {
   txt(s, "Supporting material: user journeys, algorithms, store operations, financial model, case-study detail, risks and references.", { x: 0.8, y: 3.95, w: 7.8, h: 0.9, fontSize: 14, color: G4 });
   page += 1;
 }
-const apx = (k, t, src) => { const s = pres.addSlide(); frame(s, -1, k, t, src, true); return s; };
+const APX = {
+  A1: ["A1  ·  User Journeys", "The seller takes four photos and makes one drop-off; the buyer never leaves the normal Zara flow."],
+  A2: ["A2  ·  Two-Stage Trust", "Listings go live as AI-GRADED; nothing ships until staff mark the sold garment ZARA VERIFIED."],
+  A3: ["A3  ·  Pricing Engine", "Zara, not the seller, sets one price per item from its own sales and market comparables."],
+  A4: ["A4  ·  Dynamic Demand Bonus", "The bonus rises only when an item is scarce and is paid only when it sells; a flat bonus would lose money."],
+  A5: ["A5  ·  Store Operations", "At Year-3 volume a store handles about seven items a day at a desk that already processes returns."],
+  A6: ["A6  ·  Unit Economics", "Each garment loses about $2 on fees and logistics; the loop around the sale more than pays for it."],
+  A7: ["A7  ·  Financial Model", "Base case: 246k garments and $6.7M of net new revenue in Year 3, about $0.7M short of covering its team."],
+  A8: ["A8  ·  Case Studies in Detail", "Scaled to Zara's prices, integration and pricing lessons transfer; warehouses and luxury authentication do not."],
+  A9: ["A9  ·  Risks & Mitigations", "The two risks that decide the economics, cannibalisation and incentive spend, are measured against a hold-out."],
+  A10: ["A10  ·  Market Context", "Zara has the scale, stores and customers; second-hand demand and regulation are both moving its way."],
+  A11: ["A11  ·  Methodology", "A product teardown, a working prototype, desk research on 30+ sources and a scenario model."],
+  A12: ["A12  ·  References", "Public sources used in this deck; every figure is tagged confirmed, estimate or assumption in the team document."],
+};
+const apx = (k, t, src) => { const s = pres.addSlide(); const a = APX[k.split(" ")[0]]; frame(s, -1, a[0], a[1], src, true); return s; };
 
 {
   const s = apx("A1  USER JOURNEYS", "End to end, the seller takes four photos and makes one drop-off; the buyer never leaves the normal Zara flow", "Team prototype, zara-reloop.vercel.app (buyer and seller flows)");
