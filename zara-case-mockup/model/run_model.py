@@ -38,7 +38,11 @@ levers = {
  "dropoff_50pct": {"drop": 0.50},
  "no_demand_bonus": {"bonus_face": 0.0},
  "labour_12min": {"lab_min": 12.0},
- "attach_zalando_20pct": {"att_rate": 0.20},
+ "attach_recurate_15pct": {"att_rate": 0.15},
+ "launch_mix_instock_10pct": {"shB": 0.10},
+ "fixed_cost_old_1.2M": {"fix1": 0.8, "fix2": 1.1, "fix3": 1.2},
+ "pilot_target_conv3pct": {"conv": 0.03, "fix2": 1.1, "fix3": 1.2},
+ "pilot_target_conv2pct": {"conv": 0.02, "fix2": 1.0, "fix3": 1.1},
 }
 out["levers"] = {}
 for k, ov in levers.items():

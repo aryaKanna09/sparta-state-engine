@@ -37,7 +37,7 @@ names = {"current_policy_fee5_ship4.95_credit50": "Today's policy: fee stays $1 
  "credit_share_50pct": "Only 50% take Zara credit", "incrementality_25pct": "Credit incrementality 25% (base 40%)", "incrementality_55pct": "Credit incrementality 55%",
  "cannibalisation_x1.5": "Cannibalisation 1.5x base", "cannibalisation_x0.5": "Cannibalisation 0.5x base", "conversion_0.8pct": "Prompt conversion 0.8% (base 1.5%)",
  "conversion_3pct": "Prompt conversion 3%", "parcel_8.50": "Parcel cost $8.50 (list rate), fee unchanged", "parcel_5.50": "Parcel cost $5.50",
- "price_36": "Average sale $36 (base $30)", "price_24": "Average sale $24", "dropoff_50pct": "Only 50% drop off in store (base 80%)", "no_demand_bonus": "No demand bonus on sold-out items (same volume assumed)",
+ "price_36": "Average sale $36 (base $30)", "price_24": "Average sale $24", "dropoff_50pct": "Only 50% drop off in store (base 80%)", "no_demand_bonus": "No demand bonus on sold-out items (same volume assumed)", "attach_recurate_15pct": "New add-on in 15% of orders (Recurate low end; base 20%)", "launch_mix_instock_10pct": "In-stock current-season items 10% of sales (base 5%)", "fixed_cost_old_1.2M": "Team at the earlier $0.8/1.1/1.2M budget", "pilot_target_conv3pct": "PILOT TARGET: 3% prompt conversion, team grown to $1.2M", "pilot_target_conv2pct": "2% prompt conversion, team $1.1M",
  "labour_12min": "Staff time 12 min per item (base 7)", "attach_zalando_20pct": "Incremental new add-on in 20% of orders (Zalando observes 40% mixed baskets)"}
 for i, (k, v) in enumerate(allr):
     se.cell(row=4 + i, column=1, value=names.get(k, k)).font = bold if k == "BASE" else Font()

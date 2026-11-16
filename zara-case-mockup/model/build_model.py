@@ -53,7 +53,7 @@ A = [
  ("cm", "Flow-through margin on incremental new-merchandise sales", "%", 0.45, 0.50, 0.55, "Inditex gross margin 58.3% FY2025 (CONFIRMED) less variable selling cost."),
  ("cogs", "Cost of goods as % of sales", "%", 0.417, 0.417, 0.417, "1 - 58.3% gross margin."),
  ("shA", "Mix: sold-out-size / sold-out-style trigger (bucket A)", "%", 0.30, 0.35, 0.40, "ESTIMATE"),
- ("shB", "Mix: in-stock current-season item (bucket B)", "%", 0.15, 0.10, 0.10, "ESTIMATE; supply is naturally thin. Bucket C (past season) is the remainder."),
+ ("shB", "Mix: in-stock current-season item (bucket B; launch rule keeps it to ~5%)", "%", 0.15, 0.10, 0.10, "ESTIMATE; supply is naturally thin. Bucket C (past season) is the remainder."),
  ("cA", "Cannibalisation, bucket A (would have bought another new Zara item instead)", "%", 0.35, 0.25, 0.15, "INFORMS M&SOM 2023: 51.7% of unmet size demand spills to adjacent sizes, ~48% is lost to the style. Pre-owned takers skew to the lost half."),
  ("cB", "Cannibalisation, bucket B", "%", 0.70, 0.60, 0.50, "ESTIMATE; WRAP: resale displaces 64.6% of new purchases market-wide."),
  ("cC", "Cannibalisation, bucket C", "%", 0.15, 0.10, 0.05, "ESTIMATE; 46% of shoppers already browse resale before buying new, so that leak exists today off-platform."),
@@ -88,23 +88,23 @@ REV = {
  "lab_rate": (0.43, 0.40, 0.40), "pack": (0.25, 0.15, 0.12), "pay_pct": (0.025, 0.022, 0.020), "pay_fix": (0.25, 0.20, 0.15),
  "u_per_acct": (1.2, 1.3, 1.5), "exc_rate": (0.06, 0.04, 0.04), "exc_cost": (13.0, 12.0, 12.0), "cs": (0.40, 0.30, 0.30),
  "cred_share": (0.55, 0.70, 0.70), "breakage": (0.04, 0.05, 0.05), "incr": (0.30, 0.40, 0.40), "over": (0.40, 0.50, 0.50),
- "cm": (0.47, 0.50, 0.50), "shA": (0.30, 0.35, 0.35), "shB": (0.13, 0.10, 0.10), "cA": (0.30, 0.25, 0.25), "cB": (0.65, 0.60, 0.60),
- "cC": (0.13, 0.10, 0.10), "save_rate": (0.10, 0.15, 0.15), "save_val": (65.0, 75.0, 75.0), "att_rate": (0.07, 0.10, 0.12),
+ "cm": (0.47, 0.50, 0.50), "shA": (0.30, 0.35, 0.35), "shB": (0.13, 0.05, 0.05), "cA": (0.30, 0.25, 0.25), "cB": (0.65, 0.60, 0.60),
+ "cC": (0.13, 0.10, 0.10), "save_rate": (0.10, 0.15, 0.15), "save_val": (65.0, 75.0, 75.0), "att_rate": (0.07, 0.20, 0.20),
  "att_val": (42.0, 45.0, 45.0), "ntb": (0.13, 0.20, 0.20), "ntb_conv": (0.15, 0.25, 0.25), "ntb_spend": (130.0, 150.0, 150.0),
- "bonus_face": (5.0, 5.0, 5.0), "fix1": (0.9, 0.8, 1.0), "fix2": (1.3, 1.1, 1.6), "fix3": (1.4, 1.2, 1.7), "capex_mult": (1.15, 1.0, 1.0), "ai": (0.04, 0.03, 0.03),
+ "bonus_face": (5.0, 5.0, 5.0), "fix1": (0.9, 0.75, 1.0), "fix2": (1.3, 0.95, 1.6), "fix3": (1.4, 1.0, 1.7), "capex_mult": (1.15, 1.0, 1.0), "ai": (0.04, 0.03, 0.03),
 }
 SRC = {
  "cust": "ESTIMATE, plausible range 4-13M. Inditex does not disclose US sales or customers. Order-based: ECDB US online ~$1.45bn / $90-120 per order / 2-3 orders a year = 4-8M online buyers; app-based: 11-13M.",
  "conv": "ANALOGY, no direct benchmark exists. Passive benchmark: 2.3% of Shein Exchange sign-ups listed anything in year one. Push: e-commerce CTR 3.1-3.8%, abandoned-cart order rate 3.3%, back-in-stock 5.3-6.7%. Base 1.5% per prompt x 6 prompts gives roughly 5% of customers listing in a year.",
  "price": "Zara's typical resale price is low: ~EUR 12.80 on Vinted (1.1M sales), ~$20 median across marketplaces. ReHang has a $20 floor and skews to jackets, coats and dresses, so $30 base. $36 only in the upside.",
  "sell": "Zara median 24 days to sell across marketplaces, 11 days on Vinted France. Zalando Pre-owned: 62% of the range sells within 7 days (company figure, 2026).",
- "att_rate": "ASSUMPTION. Zalando Pre-owned (2026): 40% of customers buying pre-owned add a NEW item to the same order. We count a quarter of that as incremental.",
+ "att_rate": "BENCHMARK. Zalando Pre-owned (2026): 40% of customers buying pre-owned add a NEW item to the same order, in one native bag as ReHang has. We count half of that as incremental (20%). Low end: Recurate (2022) found brand-resale buyers add new items 15% of the time.",
  "ntb": "ASSUMPTION. No brand publishes this; vendor claims range from 40% to 80% (Trove, Archive) and contradict each other. 20% is half the lowest vendor figure.",
  "ntb_conv": "ASSUMPTION. Vendor claims: Trove 10% within 6 months in its report (its CEO has said 50%); Archive 47-60%.",
  "over": "ASSUMPTION. Gift-card proxy: 61% of redeemers overspend, by $31.75 (Capital One) to $59 (First Data 2018). Vendor claims for resale credit are far higher (Treet: recipients spend 2.5-3x the credit; M.M.LaFleur ~3x).",
  "cred_share": "ASSUMPTION. Brand trade-in programmes are 100% credit; M.M.LaFleur reports ~70% of sellers choose credit (Modern Retail); Lululemon Canada pays 70% cash or 90% credit.",
  "lab_min": "ESTIMATE: verify 3-4 min + pack/label 3. Reference points: returns ~4 min per RMA; Patagonia's full managed operation (inspect, clean, repair, photograph, ship) runs ~230,000 items a year with 40+ associates, roughly 20 min an item.",
- "fix1": "ESTIMATE, incremental to today's Pre-Owned team: pricing/ML 2 FTE, ops programme 2, trust & safety/CS 2, data licences, cloud. Scales with volume across scenarios.",
+ "fix1": "BOTTOM-UP, incremental to today's Pre-Owned team. Pricing/ML 2 FTE at Inditex tech in Arteixo (senior data scientist EUR 55-75k, Jobrise 2026; manager EUR 73-104k, Levels.fyi) loaded ~$115k each = $0.23M; US ops programme 2 FTE (NY e-commerce ops manager ~$90k base, Payscale) x 1.30 BLS load = $0.26M; trust & safety / CS 2 FTE (~$70-100k, Payscale/Glassdoor) loaded ~$105k = $0.21M; resale-price data licences ~$0.10M (Bright Data ~$0.0025 per record); cloud ~$0.10M. Year 1 is part-year hiring; Year 3 adds pay growth. Upside needs a larger team.",
 }
 A = [row if len(row) == 2 else (row[0], row[1], row[2]) + tuple(REV.get(row[0], row[3:6])) + (SRC.get(row[0], row[6]),) for row in A]
 
