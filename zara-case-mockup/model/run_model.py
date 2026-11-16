@@ -29,14 +29,16 @@ levers = {
  "incrementality_55pct": {"incr": 0.55},
  "cannibalisation_x1.5": {"cA": 0.375, "cB": 0.90, "cC": 0.15},
  "cannibalisation_x0.5": {"cA": 0.125, "cB": 0.30, "cC": 0.05},
- "conversion_1.5pct": {"conv": 0.015},
- "conversion_5pct": {"conv": 0.05},
+ "conversion_0.8pct": {"conv": 0.008},
+ "conversion_3pct": {"conv": 0.03},
  "parcel_8.50": {"parcel": 8.50},
  "parcel_5.50": {"parcel": 5.50},
- "price_floor_avg_42": {"price": 42.0},
+ "price_36": {"price": 36.0},
+ "price_24": {"price": 24.0},
  "dropoff_70pct": {"drop": 0.70},
  "no_demand_bonus": {"bonus_face": 0.0},
- "labour_9min": {"lab_min": 9.0},
+ "labour_12min": {"lab_min": 12.0},
+ "attach_zalando_20pct": {"att_rate": 0.20},
 }
 out["levers"] = {}
 for k, ov in levers.items():

@@ -77,21 +77,36 @@ A = [
  ("stores", "Zara stores in the US", "#", 102, 102, 102, "CONFIRMED end FY2025."),
 ]
 
-# Scenario ranges are joint outcomes (moderately worse / better on most lines), not every extreme at once.
+# Scenario ranges are joint outcomes, anchored on published benchmarks for brand-run resale:
+# Conservative ~ the typical brand programme (<0.1% of sales), Base ~ 0.2% of US sales,
+# Upside ~ what H&M group (0.8%) and Patagonia (~0.9%) reached after years.
 REV = {
- "cust": (7.0, 8.0, 9.0), "reach": (0.52, 0.55, 0.58), "pr1": (3, 4, 4), "pr2": (5, 6, 6), "conv": (0.02, 0.03, 0.04),
- "conv_up": (0.0, 0.10, 0.15), "complete": (0.65, 0.70, 0.75), "items": (1.3, 1.5, 1.7), "organic": (0.10, 0.15, 0.20),
- "sell": (0.50, 0.60, 0.65), "price": (33.0, 36.0, 38.0), "fee2": (0.05, 0.10, 0.10), "fee3": (0.05, 0.10, 0.10),
- "ship_fee": (6.50, 6.50, 6.50), "parcel": (7.50, 6.50, 6.00), "drop": (0.45, 0.50, 0.55), "lab_min": (7.0, 6.0, 5.0),
+ "cust": (5.0, 7.0, 9.0), "cust_g": (0.04, 0.06, 0.08), "reach": (0.50, 0.55, 0.58), "pr1": (3, 4, 4), "pr2": (4, 6, 6),
+ "conv": (0.008, 0.015, 0.03), "conv_up": (0.0, 0.10, 0.10), "complete": (0.60, 0.65, 0.70), "items": (1.2, 1.4, 1.5),
+ "organic": (0.10, 0.15, 0.15), "sell": (0.45, 0.55, 0.60), "price": (26.0, 30.0, 36.0), "fee2": (0.05, 0.10, 0.10), "fee3": (0.05, 0.10, 0.10),
+ "ship_fee": (6.50, 6.50, 6.50), "parcel": (7.50, 6.50, 6.00), "drop": (0.45, 0.50, 0.55), "lab_min": (10.0, 7.0, 6.0),
  "lab_rate": (0.43, 0.40, 0.40), "pack": (0.25, 0.15, 0.12), "pay_pct": (0.025, 0.022, 0.020), "pay_fix": (0.25, 0.20, 0.15),
- "u_per_acct": (1.2, 1.3, 1.5), "exc_rate": (0.05, 0.04, 0.03), "exc_cost": (13.0, 12.0, 11.0), "cs": (0.40, 0.30, 0.25),
- "cred_share": (0.55, 0.70, 0.80), "breakage": (0.04, 0.05, 0.06), "incr": (0.30, 0.40, 0.50), "over": (0.40, 0.50, 0.60),
- "cm": (0.47, 0.50, 0.52), "shA": (0.30, 0.35, 0.38), "shB": (0.13, 0.10, 0.10), "cA": (0.30, 0.25, 0.20), "cB": (0.65, 0.60, 0.55),
- "cC": (0.13, 0.10, 0.07), "save_rate": (0.10, 0.15, 0.18), "save_val": (65.0, 75.0, 80.0), "att_rate": (0.07, 0.10, 0.12),
- "att_val": (42.0, 45.0, 48.0), "ntb": (0.13, 0.20, 0.25), "ntb_conv": (0.15, 0.25, 0.28), "ntb_spend": (130.0, 150.0, 160.0),
- "bonus_face": (5.0, 5.0, 5.0), "fix2": (1.8, 1.6, 1.6), "fix3": (2.0, 1.7, 1.8), "capex_mult": (1.15, 1.0, 1.0), "ai": (0.04, 0.03, 0.02),
+ "u_per_acct": (1.2, 1.3, 1.5), "exc_rate": (0.06, 0.04, 0.04), "exc_cost": (13.0, 12.0, 12.0), "cs": (0.40, 0.30, 0.30),
+ "cred_share": (0.55, 0.70, 0.70), "breakage": (0.04, 0.05, 0.05), "incr": (0.30, 0.40, 0.40), "over": (0.40, 0.50, 0.50),
+ "cm": (0.47, 0.50, 0.50), "shA": (0.30, 0.35, 0.35), "shB": (0.13, 0.10, 0.10), "cA": (0.30, 0.25, 0.25), "cB": (0.65, 0.60, 0.60),
+ "cC": (0.13, 0.10, 0.10), "save_rate": (0.10, 0.15, 0.15), "save_val": (65.0, 75.0, 75.0), "att_rate": (0.07, 0.10, 0.12),
+ "att_val": (42.0, 45.0, 45.0), "ntb": (0.13, 0.20, 0.20), "ntb_conv": (0.15, 0.25, 0.25), "ntb_spend": (130.0, 150.0, 150.0),
+ "bonus_face": (5.0, 5.0, 5.0), "fix1": (0.9, 0.8, 1.0), "fix2": (1.3, 1.1, 1.6), "fix3": (1.4, 1.2, 1.7), "capex_mult": (1.15, 1.0, 1.0), "ai": (0.04, 0.03, 0.03),
 }
-A = [row if len(row) == 2 or row[0] not in REV else (row[0], row[1], row[2]) + REV[row[0]] + (row[6],) for row in A]
+SRC = {
+ "cust": "ESTIMATE, plausible range 4-13M. Inditex does not disclose US sales or customers. Order-based: ECDB US online ~$1.45bn / $90-120 per order / 2-3 orders a year = 4-8M online buyers; app-based: 11-13M.",
+ "conv": "ANALOGY, no direct benchmark exists. Passive benchmark: 2.3% of Shein Exchange sign-ups listed anything in year one. Push: e-commerce CTR 3.1-3.8%, abandoned-cart order rate 3.3%, back-in-stock 5.3-6.7%. Base 1.5% per prompt x 6 prompts gives roughly 5% of customers listing in a year.",
+ "price": "Zara's typical resale price is low: ~EUR 12.80 on Vinted (1.1M sales), ~$20 median across marketplaces. ReLoop has a $20 floor and skews to jackets, coats and dresses, so $30 base. $36 only in the upside.",
+ "sell": "Zara median 24 days to sell across marketplaces, 11 days on Vinted France. Zalando Pre-owned: 62% of the range sells within 7 days (company figure, 2026).",
+ "att_rate": "ASSUMPTION. Zalando Pre-owned (2026): 40% of customers buying pre-owned add a NEW item to the same order. We count a quarter of that as incremental.",
+ "ntb": "ASSUMPTION. No brand publishes this; vendor claims range from 40% to 80% (Trove, Archive) and contradict each other. 20% is half the lowest vendor figure.",
+ "ntb_conv": "ASSUMPTION. Vendor claims: Trove 10% within 6 months in its report (its CEO has said 50%); Archive 47-60%.",
+ "over": "ASSUMPTION. Gift-card proxy: 61% of redeemers overspend, by $31.75 (Capital One) to $59 (First Data 2018). Vendor claims for resale credit are far higher (Treet: recipients spend 2.5-3x the credit; M.M.LaFleur ~3x).",
+ "cred_share": "ASSUMPTION. Brand trade-in programmes are 100% credit; M.M.LaFleur reports ~70% of sellers choose credit (Modern Retail); Lululemon Canada pays 70% cash or 90% credit.",
+ "lab_min": "ESTIMATE: verify 3-4 min + pack/label 3. Reference points: returns ~4 min per RMA; Patagonia's full managed operation (inspect, clean, repair, photograph, ship) runs ~230,000 items a year with 40+ associates, roughly 20 min an item.",
+ "fix1": "ESTIMATE, incremental to today's Pre-Owned team: pricing/ML 2 FTE, ops programme 2, trust & safety/CS 2, data licences, cloud. Scales with volume across scenarios.",
+}
+A = [row if len(row) == 2 else (row[0], row[1], row[2]) + tuple(REV.get(row[0], row[3:6])) + (SRC.get(row[0], row[6]),) for row in A]
 
 def build(path, scenario=2, over=None):
     over = over or {}
@@ -288,7 +303,7 @@ def build(path, scenario=2, over=None):
         c = cs.cell(row=3, column=i, value=h); c.font = hf; c.fill = hdr
     rows = [
      ("Inbound parcel", "=(1-%s)*%s" % (R["drop"], R["parcel"]), "=%s" % R["parcel"], "ReLoop: half arrive by hand at a store. DC: every item is mailed in."),
-     ("Receive, inspect, grade", "=3*%s" % R["lab_rate"], "=4*0.35", "DC wage assumed $0.35/min loaded."),
+     ("Receive, inspect, grade", "=(%s-3)*%s" % (R["lab_min"], R["lab_rate"]), "=4*0.35", "ReLoop: staff minutes less the 3 used for packing. DC wage assumed $0.35/min loaded."),
      ("Photograph and list", "=0", "=3*0.35", "ReLoop: the seller's 4 guided photos are the listing."),
      ("Acceptance rate", "=1", "=0.7", "ThredUp accepts roughly 50-80% of a kit; ReLoop only receives items that have already sold."),
      ("Intake cost per ACCEPTED item", "=(B4+B5+B6)/B7", "=(C4+C5+C6)/C7", ""),
